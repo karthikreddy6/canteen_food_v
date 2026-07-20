@@ -3,7 +3,7 @@ import uuid
 import datetime
 from sqlalchemy import (
     Column, String, Numeric, Boolean, ForeignKey, DateTime,
-    Integer, Enum, func, Text, Date, Time
+    Integer, Enum, func, Text, Date, Time, Table
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -27,6 +27,41 @@ class TicketStatus(str, enum.Enum):
     RESOLVED = "RESOLVED"
 
 
+college_canteens = Table(
+    "college_canteens", Base.metadata,
+    Column("college_id", UUID(as_uuid=True), ForeignKey("colleges.id", ondelete="CASCADE"), primary_key=True),
+    Column("canteen_id", UUID(as_uuid=True), ForeignKey("canteens.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class Campus(Base):
+    __tablename__ = "campuses"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False, unique=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+
+class College(Base):
+    __tablename__ = "colleges"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    canteens = relationship("Canteen", secondary=college_canteens, back_populates="colleges")
+
+
+class Canteen(Base):
+    __tablename__ = "canteens"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    auto_accept_orders = Column(Boolean, nullable=False, default=False, server_default="false")
+    colleges = relationship("College", secondary=college_canteens, back_populates="canteens")
+    vendors = relationship("VendorAccount", back_populates="canteen")
+    menu_items = relationship("MenuItem", back_populates="canteen")
+
+
 # ─────────────────────────────────────────────
 # User
 # ─────────────────────────────────────────────
@@ -38,11 +73,61 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True, index=True)
     phone = Column(String, nullable=True)
+    phone_verified = Column(Boolean, nullable=False, default=False, server_default="false")
+    roll_number = Column(String, nullable=True, unique=True, index=True)
+    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=True, index=True)
+    college = Column(String, nullable=True)
+    college_id = Column(UUID(as_uuid=True), ForeignKey("colleges.id"), nullable=True, index=True)
+    preferred_canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
+    use_roll_number_as_order_token = Column(Boolean, nullable=False, default=False, server_default="false")
+    token_version = Column(Integer, nullable=False, default=1, server_default="1")  # Incremented on login → invalidates old sessions
+    last_order_at = Column(DateTime, nullable=True)
     hashed_password = Column(String, nullable=False)
 
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
     tickets = relationship("SupportTicket", back_populates="user", cascade="all, delete-orphan")
+    college_record = relationship("College", foreign_keys=[college_id])
+    preferred_canteen = relationship("Canteen", foreign_keys=[preferred_canteen_id])
+    registration_otp = relationship("RegistrationOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
+
+
+class RegistrationOtp(Base):
+    __tablename__ = "registration_otps"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    code_hash = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    user = relationship("User", back_populates="registration_otp")
+
+
+class VendorAccount(Base):
+    __tablename__ = "vendor_accounts"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True, index=True)
+    role = Column(String, nullable=False, default="staff")
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    canteen = relationship("Canteen", back_populates="vendors")
+
+
+class StaffMember(Base):
+    __tablename__ = "staff_members"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="active")
+    image_url = Column(String, nullable=True)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
 
 
 # ─────────────────────────────────────────────
@@ -57,6 +142,14 @@ class Category(Base):
     icon_url = Column(String, nullable=True)
     display_order = Column(Integer, nullable=False, default=0)
     is_active = Column(Boolean, nullable=False, default=True)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+        server_default=func.now(),
+        index=True,
+    )
 
     menu_items = relationship("MenuItem", back_populates="category")
 
@@ -88,13 +181,26 @@ class MenuItem(Base):
     original_price = Column(Numeric(10, 2), nullable=True)  # Pre-discount price (for display)
     discount_percent = Column(Numeric(5, 2), nullable=True) # e.g. 10.00 = 10%
     category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id"), nullable=True)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
     image_url = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    stock = Column(Integer, nullable=False, default=0, server_default="0")
+    is_student_visible = Column(Boolean, nullable=False, default=True, server_default="true")
     special_offer = Column(Boolean, nullable=False, default=False, name="is_special_offer")
     is_available = Column(Boolean, nullable=False, default=True)
     preparation_time_minutes = Column(Integer, nullable=False, default=10)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+        server_default=func.now(),
+        index=True,
+    )
 
     category = relationship("Category", back_populates="menu_items")
     cart_items = relationship("CartItem", back_populates="menu_item")
+    canteen = relationship("Canteen", back_populates="menu_items")
 
 
 # ─────────────────────────────────────────────
@@ -107,6 +213,7 @@ class CartItem(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     menu_item_id = Column(UUID(as_uuid=True), ForeignKey("menu_items.id"), nullable=False)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
     quantity = Column(Integer, nullable=False, default=1)
     added_at = Column(DateTime, nullable=False,
                       default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
@@ -124,7 +231,12 @@ class Order(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
+    user_roll_number = Column(String, nullable=True, index=True)
+    order_token = Column(String, nullable=True, index=True)
     total_amount = Column(Numeric(10, 2), nullable=False)
+    discount_amount = Column(Numeric(10, 2), nullable=False, default=0)
+    coupon_code = Column(String, nullable=True)
     status = Column(Enum(OrderStatus, name="order_status"),
                     nullable=False, default=OrderStatus.PLACED)
     # Pickup counter number — resets daily
@@ -147,6 +259,56 @@ class Order(Base):
     items = relationship("OrderItem", back_populates="order",
                          cascade="all, delete-orphan", lazy="joined")
     scheduled_slot = relationship("TimeSlot", lazy="joined")
+
+
+class Coupon(Base):
+    __tablename__ = "coupons"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    code = Column(String, nullable=False, unique=True, index=True)
+    discount_type = Column(String, nullable=False, default="PERCENT")   # PERCENT | FIXED
+    value = Column(Numeric(10, 2), nullable=False)                      # e.g. 10 = 10% or ₹10
+    min_order_amount = Column(Numeric(10, 2), nullable=True)            # Minimum cart total to apply
+    max_discount_amount = Column(Numeric(10, 2), nullable=True)         # Cap on discount (e.g. max ₹25 off)
+    active = Column(Boolean, nullable=False, default=True)
+    expires_at = Column(DateTime, nullable=True)
+    max_uses = Column(Integer, nullable=True)                           # Global usage limit (None = unlimited)
+    used_count = Column(Integer, nullable=False, default=0)
+    per_user_limit = Column(Integer, nullable=True)                    # Per-user limit (1 = one-time, None = unlimited)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    usages = relationship("CouponUsage", back_populates="coupon", cascade="all, delete-orphan")
+
+
+class CouponUsage(Base):
+    """Tracks how many times each user has used a specific coupon."""
+    __tablename__ = "coupon_usages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    coupon_id = Column(UUID(as_uuid=True), ForeignKey("coupons.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    used_at = Column(DateTime, nullable=False,
+                     default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+                     server_default=func.now())
+
+    coupon = relationship("Coupon", back_populates="usages")
+
+
+class Banner(Base):
+    __tablename__ = "banners"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title = Column(String, nullable=False)
+    image_url = Column(String, nullable=False)
+    link_url = Column(String, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    display_order = Column(Integer, nullable=False, default=0)
+    starts_at = Column(DateTime, nullable=True)
+    ends_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=True, index=True)
+    college_id = Column(UUID(as_uuid=True), ForeignKey("colleges.id"), nullable=True, index=True)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
 
 
 # ─────────────────────────────────────────────
@@ -177,6 +339,7 @@ class KitchenSettings(Base):
     base_prep_buffer_minutes = Column(Integer, nullable=False, default=3)
     max_concurrent_orders = Column(Integer, nullable=False, default=20)
     is_accepting_orders = Column(Boolean, nullable=False, default=True)
+    use_roll_number_as_order_token = Column(Boolean, nullable=False, default=False)
 
 
 # ─────────────────────────────────────────────

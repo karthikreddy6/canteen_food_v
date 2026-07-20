@@ -23,6 +23,7 @@ def _build_cart_item_response(cart_item: CartItem) -> CartItemResponse:
     return CartItemResponse(
         id=cart_item.id,
         menu_item_id=cart_item.menu_item_id,
+        canteen_id=cart_item.canteen_id or item.canteen_id,
         quantity=cart_item.quantity,
         item_name=item.name,
         item_price=item.price,
@@ -73,6 +74,11 @@ async def add_to_cart(
     if not menu_item.is_available:
         raise BadRequestException(f"'{menu_item.name}' is currently not available")
 
+    existing_canteens = await db.execute(select(CartItem.canteen_id).where(CartItem.user_id == user_id).limit(1))
+    existing_canteen = existing_canteens.scalar_one_or_none()
+    if existing_canteen and existing_canteen != menu_item.canteen_id:
+        raise BadRequestException("Your cart can contain items from only one canteen")
+
     # Check if already in cart
     existing_result = await db.execute(
         select(CartItem).where(
@@ -89,6 +95,7 @@ async def add_to_cart(
         cart_item = CartItem(
             user_id=user_id,
             menu_item_id=request.menu_item_id,
+            canteen_id=menu_item.canteen_id,
             quantity=request.quantity
         )
         db.add(cart_item)

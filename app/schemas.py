@@ -28,7 +28,9 @@ class CategoryResponse(CamelModel):
     name: str
     icon_url: Optional[str] = None
     display_order: int
+    is_active: bool = True
     item_count: Optional[int] = None  # populated in router
+    updated_at: Optional[datetime] = None
 
 
 # ─────────────────────────────────────────────
@@ -56,10 +58,26 @@ class MenuItemResponse(CamelModel):
     original_price: Optional[Decimal] = None
     discount_percent: Optional[Decimal] = None
     category_id: Optional[UUID] = None
+    canteen_id: Optional[UUID] = None
     image_url: Optional[str] = Field(None, serialization_alias="imageUrl")
     special_offer: bool = Field(False, serialization_alias="specialOffer")
     is_available: bool = True
     preparation_time_minutes: int = 10
+    updated_at: Optional[datetime] = None
+
+
+class MenuPageResponse(CamelModel):
+    items: List[MenuItemResponse]
+    total: int
+    page: int
+    limit: int
+    has_more: bool
+
+
+class MenuSyncResponse(CamelModel):
+    categories: List[CategoryResponse]
+    items: List[MenuItemResponse]
+    server_time: datetime
 
 
 # ─────────────────────────────────────────────
@@ -76,6 +94,7 @@ class UpdateCartItemRequest(CamelModel):
 class CartItemResponse(CamelModel):
     id: UUID
     menu_item_id: UUID
+    canteen_id: Optional[UUID] = None
     quantity: int
     # Flattened item details for convenience
     item_name: str
@@ -119,6 +138,7 @@ class CreateOrderRequest(CamelModel):
     items: Optional[List[CreateOrderItemRequest]] = None  # If None, pull from cart
     scheduled_date: Optional[date] = None
     scheduled_slot_id: Optional[UUID] = None
+    coupon_code: Optional[str] = None
 
 class OrderItemResponse(CamelModel):
     id: UUID
@@ -132,7 +152,12 @@ class OrderItemResponse(CamelModel):
 class OrderResponse(CamelModel):
     id: UUID
     user_id: str
+    canteen_id: Optional[UUID] = None
+    user_roll_number: Optional[str] = None
+    order_token: Optional[str] = None
     total_amount: Decimal
+    discount_amount: Decimal = Decimal("0.00")
+    coupon_code: Optional[str] = None
     status: OrderStatus
     pickup_number: Optional[int] = None
     pickup_date: Optional[date] = None
@@ -164,6 +189,7 @@ class KitchenStatusResponse(CamelModel):
     active_orders_count: int
     estimated_wait_minutes: int
     message: str
+    use_roll_number_as_order_token: bool = False
 
 class EtaPreviewRequest(CamelModel):
     items: List[CreateOrderItemRequest]
@@ -184,12 +210,22 @@ class UserResponse(CamelModel):
     name: str
     email: str
     phone: Optional[str] = None
+    roll_number: Optional[str] = None
+    college: Optional[str] = None
+    college_id: Optional[UUID] = None
+    preferred_canteen_id: Optional[UUID] = None
+    use_roll_number_as_order_token: bool = False
+    phone_verified: bool = False
 
 class RegisterRequest(CamelModel):
     name: str
     email: str
     password: str
-    phone: Optional[str] = None
+    phone: str = Field(min_length=1)
+    roll_number: str = Field(min_length=1, max_length=50)
+    college: str = Field(min_length=1, max_length=200)
+    college_id: Optional[UUID] = None
+    preferred_canteen_id: Optional[UUID] = None
 
 class LoginRequest(CamelModel):
     email: str
@@ -201,10 +237,31 @@ class LoginResponse(CamelModel):
     user: UserResponse
 
 
+class RegistrationOtpResponse(CamelModel):
+    verification_required: bool = True
+    expires_in_minutes: int
+    message: str
+
+
+class VerifyRegistrationOtpRequest(CamelModel):
+    email: str
+    otp: str = Field(min_length=6, max_length=6)
+
+
+class ResendRegistrationOtpRequest(CamelModel):
+    email: str
+    password: str
+
+
 class UpdateProfileRequest(CamelModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     password: Optional[str] = None
+    roll_number: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    college: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    college_id: Optional[UUID] = None
+    preferred_canteen_id: Optional[UUID] = None
+    use_roll_number_as_order_token: Optional[bool] = None
 
 
 # ─────────────────────────────────────────────

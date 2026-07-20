@@ -34,7 +34,8 @@ async def get_kitchen_status(db: AsyncSession = Depends(get_db)):
         is_accepting_orders=settings.is_accepting_orders and active_count < settings.max_concurrent_orders,
         active_orders_count=active_count,
         estimated_wait_minutes=wait_minutes,
-        message=message
+        message=message,
+        use_roll_number_as_order_token=settings.use_roll_number_as_order_token
     )
 
 

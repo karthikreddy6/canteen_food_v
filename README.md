@@ -118,6 +118,12 @@ Once running, you can access the Interactive API docs (Swagger UI) at:
 * **`GET /api/orders/stream/{userId}`**
   * Establishes a persistent Server-Sent Events (SSE) connection. Sends a `{"connected": "ok"}` event initially, and broadcasts changes dynamically as `"order-status"` events.
 
+### Cart and Coupon Flow
+* Cart storage sends only `menuItemId` and `quantity`; prices and totals are calculated by the server.
+* **`POST /api/coupons/apply`** accepts `couponCode` plus cart item IDs and quantities and returns current item prices, subtotal, discount, and final preview total.
+* Coupon preview does not create an order or consume coupon usage.
+* Cart checkout/display is separate from `POST /api/orders`.
+
 ---
 
 ## Error Handling Format (Spring Boot style)

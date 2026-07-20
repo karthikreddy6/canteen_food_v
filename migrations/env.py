@@ -12,7 +12,7 @@ from app.database import Base
 # Import models to ensure they are registered on Base.metadata for autogenerate
 from app.models import (
     User, MenuItem, Order, OrderItem, Category, CartItem,
-    KitchenSettings, FaqCategory, FaqItem, SupportTicket, TimeSlot
+    KitchenSettings, FaqCategory, FaqItem, SupportTicket, TimeSlot, Coupon, Banner
 )
 
 # this is the Alembic Config object, which provides

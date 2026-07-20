@@ -1,15 +1,19 @@
 import asyncio
-from datetime import datetime, timezone, date
+import re
+from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from sse_starlette.sse import EventSourceResponse
 
-from typing import List
+from typing import List, Optional
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.database import get_db, AsyncSessionLocal
-from app.models import User, MenuItem, Order, OrderItem, OrderStatus, CartItem, KitchenSettings, TimeSlot
+from app.models import Canteen, User, MenuItem, Order, OrderItem, OrderStatus, CartItem, KitchenSettings, TimeSlot, Coupon
+from app.config import settings as app_settings
 from app.schemas import (
     CreateOrderRequest, OrderResponse, OrderItemResponse,
     UpdateOrderStatusRequest, OrderHistoryResponse, TimeSlotResponse
@@ -17,10 +21,16 @@ from app.schemas import (
 from app.security import get_current_user_id
 from app.exceptions import NotFoundException, BadRequestException
 from app.sse import sse_manager
-from app.services.eta import calculate_eta, get_kitchen_settings, count_active_orders
+from app.services.eta import get_kitchen_settings, count_active_orders
 from app.services.pickup import get_next_pickup_number
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
+
+
+def _roll_number_token(roll_number: str | None, fallback: int) -> str:
+    """Return the final three numeric characters of a roll number."""
+    digits = re.sub(r"\D", "", roll_number or "")
+    return digits[-3:] if digits else str(fallback)
 
 
 # ─── Helpers ───────────────────────────────────
@@ -53,7 +63,12 @@ def _build_order_response(order: Order) -> OrderResponse:
     return OrderResponse(
         id=order.id,
         user_id=order.user_id,
+        canteen_id=order.canteen_id,
+        user_roll_number=order.user_roll_number,
+        order_token=order.order_token or (str(order.pickup_number) if order.pickup_number is not None else str(order.id)[:8]),
         total_amount=order.total_amount,
+        discount_amount=order.discount_amount or Decimal("0.00"),
+        coupon_code=order.coupon_code,
         status=order.status,
         pickup_number=order.pickup_number,
         pickup_date=order.pickup_date,
@@ -68,6 +83,18 @@ def _build_order_response(order: Order) -> OrderResponse:
     )
 
 
+async def _load_order_for_response(db: AsyncSession, order_id: UUID) -> Order | None:
+    result = await db.execute(
+        select(Order)
+        .options(
+            selectinload(Order.items).selectinload(OrderItem.menu_item),
+            selectinload(Order.scheduled_slot),
+        )
+        .where(Order.id == order_id)
+    )
+    return result.unique().scalars().first()
+
+
 async def _auto_progress_order(order_id: str):
     """
     Background task: auto-transitions PENDING → PREPARING after 60 seconds.
@@ -75,8 +102,7 @@ async def _auto_progress_order(order_id: str):
     """
     await asyncio.sleep(60)  # Wait 1 minute
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(Order).where(Order.id == order_id))
-        order = result.scalars().first()
+        order = await _load_order_for_response(db, UUID(order_id))
         if order and order.status == OrderStatus.PLACED:
             order.status = OrderStatus.PREPARING
             await db.commit()
@@ -93,6 +119,15 @@ async def _auto_progress_order(order_id: str):
                 "estimatedReadyAt": order.estimated_ready_at.isoformat() if order.estimated_ready_at else None,
                 "updatedAt": updated_at_str
             })
+
+            # Cross-notify vendor (real-time sync)
+            try:
+                from app.pubsub import event_bridge
+                from app.routers.vendor import order_json
+                payload = order_json(order)
+                await event_bridge.notify("order_status_updated", payload)
+            except Exception as e:
+                print(f"[SSE Error] Failed to broadcast auto-progression to vendor: {e}")
 
 
 # ─── Endpoints ─────────────────────────────────
@@ -117,9 +152,22 @@ async def create_order(
         raise BadRequestException("User ID mismatch with authenticated token")
 
     # 1. Verify user exists
-    user_result = await db.execute(select(User).where(User.id == request.user_id))
-    if not user_result.scalars().first():
+    user_result = await db.execute(
+        select(User).where(User.id == request.user_id).with_for_update()
+    )
+    user = user_result.scalars().first()
+    if not user:
         raise NotFoundException(f"User not found: {request.user_id}")
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    if user.last_order_at:
+        last_order_at = user.last_order_at.replace(tzinfo=None)
+        elapsed = (now - last_order_at).total_seconds()
+        if elapsed < app_settings.ORDER_COOLDOWN_SECONDS:
+            remaining = max(1, int(app_settings.ORDER_COOLDOWN_SECONDS - elapsed))
+            raise BadRequestException(
+                f"Please wait {remaining} seconds before placing another order."
+            )
 
     # 2. Check kitchen is accepting orders
     settings = await get_kitchen_settings(db)
@@ -145,18 +193,24 @@ async def create_order(
             for ci in cart_items
         ]
 
-    # 4. Validate each item's availability and calculate total
+    # 4. Validate item availability and calculate total in one menu query
     calculated_total = Decimal("0.00")
     order_items = []
-    menu_item_ids = []
+    requested_item_ids = [item_req.menu_item_id for item_req in item_requests]
+    menu_result = await db.execute(
+        select(MenuItem).where(MenuItem.id.in_(requested_item_ids))
+    )
+    menu_items_by_id = {item.id: item for item in menu_result.scalars().all()}
 
+    missing_ids = [item_id for item_id in requested_item_ids if item_id not in menu_items_by_id]
+    if missing_ids:
+        raise NotFoundException(f"Menu item not found: {missing_ids[0]}")
+
+    prep_times = []
+    canteen_ids = set()
     for item_req in item_requests:
-        mi_result = await db.execute(
-            select(MenuItem).where(MenuItem.id == item_req.menu_item_id)
-        )
-        menu_item = mi_result.scalars().first()
-        if not menu_item:
-            raise NotFoundException(f"Menu item not found: {item_req.menu_item_id}")
+        menu_item = menu_items_by_id[item_req.menu_item_id]
+        canteen_ids.add(menu_item.canteen_id)
         if not menu_item.is_available:
             raise BadRequestException(
                 f"'{menu_item.name}' is currently not available. "
@@ -165,7 +219,7 @@ async def create_order(
 
         item_price = Decimal(str(menu_item.price))
         calculated_total += item_price * item_req.quantity
-        menu_item_ids.append(menu_item.id)
+        prep_times.append(menu_item.preparation_time_minutes)
 
         order_items.append(OrderItem(
             menu_item_id=menu_item.id,
@@ -173,16 +227,80 @@ async def create_order(
             price_at_time_of_order=menu_item.price
         ))
 
-    # 5. Validate total amount
+    # Validate all items belong to ONE canteen (ignore None/unassigned items)
+    real_canteen_ids = {cid for cid in canteen_ids if cid is not None}
+    if len(real_canteen_ids) > 1:
+        raise BadRequestException("An order can only contain items from one canteen at a time.")
+    # Auto-assign canteen: from items if set, otherwise from user's preferred canteen
+    order_canteen_id = real_canteen_ids.pop() if real_canteen_ids else user.preferred_canteen_id
+
+    # 5. Apply and validate coupon
+    discount_amount = Decimal("0.00")
+    coupon = None
+    coupon_code = request.coupon_code.strip().upper() if request.coupon_code else None
+    if coupon_code:
+        from app.models import CouponUsage
+        from sqlalchemy import func as sqlfunc
+
+        coupon_result = await db.execute(
+            select(Coupon).where(Coupon.code == coupon_code).with_for_update()
+        )
+        coupon = coupon_result.scalars().first()
+
+        if not coupon or not coupon.active:
+            raise BadRequestException("Coupon is invalid or inactive.")
+        if coupon.expires_at and coupon.expires_at.replace(tzinfo=None) <= now:
+            raise BadRequestException("Coupon has expired.")
+        if coupon.max_uses is not None and coupon.used_count >= coupon.max_uses:
+            raise BadRequestException("Coupon usage limit has been reached.")
+
+        # Check minimum order amount
+        if coupon.min_order_amount is not None and calculated_total < Decimal(str(coupon.min_order_amount)):
+            raise BadRequestException(
+                f"This coupon requires a minimum order of ₹{coupon.min_order_amount}. "
+                f"Your cart total is ₹{calculated_total}."
+            )
+
+        # Check per-user usage limit
+        if coupon.per_user_limit is not None:
+            usage_count_res = await db.execute(
+                select(sqlfunc.count(CouponUsage.id)).where(
+                    CouponUsage.coupon_id == coupon.id,
+                    CouponUsage.user_id == request.user_id
+                )
+            )
+            user_usage_count = usage_count_res.scalar() or 0
+            if user_usage_count >= coupon.per_user_limit:
+                raise BadRequestException(
+                    "You have already used this coupon the maximum number of times."
+                )
+
+        # Calculate discount
+        if coupon.discount_type.upper() == "PERCENT":
+            if coupon.value < 0 or coupon.value > 100:
+                raise BadRequestException("Coupon percentage is invalid.")
+            discount_amount = calculated_total * coupon.value / Decimal("100")
+        else:
+            discount_amount = min(calculated_total, Decimal(str(coupon.value)))
+
+        # Apply max discount cap
+        if coupon.max_discount_amount is not None:
+            discount_amount = min(discount_amount, Decimal(str(coupon.max_discount_amount)))
+
+        discount_amount = discount_amount.quantize(Decimal("0.01"))
+
+    final_total = calculated_total - discount_amount
+
+    # 6. Validate total amount
     client_total = request.total_amount.quantize(Decimal("0.01"))
-    server_total = calculated_total.quantize(Decimal("0.01"))
+    server_total = final_total.quantize(Decimal("0.01"))
     if client_total != server_total:
         raise BadRequestException(
             f"Order total does not match menu prices. "
             f"Expected: {server_total}, received: {client_total}"
         )
 
-    # 6. Verify and handle Scheduling
+    # 7. Verify and handle Scheduling
     scheduled_dt = None
     order_status = OrderStatus.PLACED
 
@@ -229,29 +347,45 @@ async def create_order(
         scheduled_dt = datetime.combine(request.scheduled_date, slot.end_time)
     else:
         # Calculate ETA (only for immediate orders)
-        eta_data = await calculate_eta(db, menu_item_ids)
-        scheduled_dt = eta_data["estimated_ready_at"]
+        from datetime import timedelta
+        base_prep = max(prep_times) if prep_times else 10
+        queue_buffer = max(0, active_count) * settings.base_prep_buffer_minutes
+        scheduled_dt = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(
+            minutes=base_prep + queue_buffer
+        )
 
-    # 7. Get pickup number
+    # 8. Get pickup number
     pickup_num, pickup_dt = await get_next_pickup_number(db)
 
-    # 8. Create Order
+    # 9. Create Order
     new_order = Order(
         user_id=request.user_id,
-        total_amount=calculated_total,
+        canteen_id=order_canteen_id,
+        user_roll_number=user.roll_number,
+        total_amount=final_total,
+        discount_amount=discount_amount,
+        coupon_code=coupon_code,
         status=order_status,
         pickup_number=pickup_num,
         pickup_date=pickup_dt,
+        order_token=(_roll_number_token(user.roll_number, pickup_num)
+                     if user.use_roll_number_as_order_token and user.roll_number
+                     else str(pickup_num)),
         estimated_ready_at=scheduled_dt,
         scheduled_date=request.scheduled_date,
         scheduled_slot_id=request.scheduled_slot_id,
         notes=request.notes,
         items=order_items
     )
+    user.last_order_at = now
+    if coupon:
+        coupon.used_count += 1
+        from app.models import CouponUsage
+        db.add(CouponUsage(coupon_id=coupon.id, user_id=request.user_id))
     db.add(new_order)
     await db.flush()
 
-    # 9. Auto-clear cart
+    # 10. Auto-clear cart
     cart_result2 = await db.execute(
         select(CartItem).where(CartItem.user_id == request.user_id)
     )
@@ -260,13 +394,38 @@ async def create_order(
 
     await db.commit()
 
-    # 10. Re-fetch with relationships
-    result = await db.execute(select(Order).where(Order.id == new_order.id))
-    saved_order = result.scalars().first()
+    # 11. Re-fetch with relationships
+    saved_order = await _load_order_for_response(db, new_order.id)
 
-    # 11. Fire-and-forget auto-progression background task (only for immediate orders)
+    # 11b. Cross-broadcast new order to vendor app screens (real-time sync)
+    try:
+        from app.pubsub import event_bridge
+        from app.routers.vendor import order_json
+        payload = order_json(saved_order)
+        await event_bridge.notify("order_created", payload)
+    except Exception as e:
+        print(f"[SSE Error] Failed to broadcast new order to vendor: {e}")
+
+    # 12. Auto-accept is controlled per canteen. When disabled (the default),
+    # the order stays PLACED until the vendor accepts it.
     if saved_order.status == OrderStatus.PLACED:
-        asyncio.create_task(_auto_progress_order(str(saved_order.id)))
+        canteen = (await db.execute(select(Canteen).where(Canteen.id == order_canteen_id))).scalar_one_or_none()
+        if canteen and canteen.auto_accept_orders:
+            saved_order.status = OrderStatus.PREPARING
+            await db.commit()
+            await db.refresh(saved_order)
+            await sse_manager.broadcast_to_user(saved_order.user_id, "order-status", {
+                "orderId": str(saved_order.id), "userId": saved_order.user_id,
+                "status": OrderStatus.PREPARING.value, "pickupNumber": saved_order.pickup_number,
+                "estimatedReadyAt": saved_order.estimated_ready_at.isoformat() if saved_order.estimated_ready_at else None,
+                "updatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            })
+            try:
+                from app.pubsub import event_bridge
+                from app.routers.vendor import order_json
+                await event_bridge.notify("order_status_updated", order_json(saved_order))
+            except Exception as e:
+                print(f"[SSE Error] Failed to broadcast canteen auto-acceptance to vendor: {e}")
 
     return _build_order_response(saved_order)
 
@@ -287,6 +446,10 @@ async def get_order_history(
 
     result = await db.execute(
         select(Order)
+        .options(
+            selectinload(Order.items).selectinload(OrderItem.menu_item),
+            selectinload(Order.scheduled_slot),
+        )
         .where(Order.user_id == current_user_id)
         .order_by(Order.created_at.desc())
         .offset((page - 1) * limit)
@@ -309,8 +472,7 @@ async def get_order(
     current_user_id: str = Depends(get_current_user_id)
 ):
     """Retrieve a specific order by ID."""
-    result = await db.execute(select(Order).where(Order.id == orderId))
-    order = result.scalars().first()
+    order = await _load_order_for_response(db, orderId)
     if not order:
         raise NotFoundException(f"Order not found: {orderId}")
     if order.user_id != current_user_id:
@@ -326,8 +488,7 @@ async def update_order_status(
     current_user_id: str = Depends(get_current_user_id)
 ):
     """Update order status. When DELIVERED, records actual_ready_at."""
-    result = await db.execute(select(Order).where(Order.id == orderId))
-    order = result.scalars().first()
+    order = await _load_order_for_response(db, orderId)
     if not order:
         raise NotFoundException(f"Order not found: {orderId}")
 
@@ -349,17 +510,54 @@ async def update_order_status(
         "updatedAt": updated_at_str
     })
 
-    result = await db.execute(select(Order).where(Order.id == orderId))
-    updated_order = result.scalars().first()
+    # Cross-notify vendor (real-time sync)
+    try:
+        from app.pubsub import event_bridge
+        from app.routers.vendor import order_json
+        payload = order_json(order)
+        await event_bridge.notify("order_status_updated", payload)
+    except Exception as e:
+        print(f"[SSE Error] Failed to broadcast status update to vendor: {e}")
+
+    updated_order = await _load_order_for_response(db, orderId)
     return _build_order_response(updated_order)
 
 
 @router.get("/stream/{userId}")
 async def stream_order_status(
     userId: str,
-    current_user_id: str = Depends(get_current_user_id)
+    token: str = Query(None, description="JWT token (use when Authorization header is not possible, e.g. SSE)"),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
 ):
-    """Persistent SSE stream for real-time order tracking."""
+    """
+    Persistent SSE stream for real-time order status tracking.
+
+    Auth options (one is required):
+      1. Header:         Authorization: Bearer <token>   (standard)
+      2. Query param:    ?token=<token>                  (for SSE clients that can't set headers)
+    """
+    from app.security import settings
+    import jwt as pyjwt
+
+    raw_token = None
+    if credentials:
+        raw_token = credentials.credentials
+    elif token:
+        raw_token = token
+
+    if not raw_token:
+        raise BadRequestException("Authentication required. Pass token in Authorization header or ?token= query param.")
+
+    try:
+        payload = pyjwt.decode(raw_token, settings.JWT_SECRET, algorithms=["HS256"], issuer=settings.JWT_ISSUER)
+        current_user_id = str(payload.get("sub", ""))
+        if not current_user_id:
+            raise BadRequestException("Invalid token: missing user ID")
+    except pyjwt.ExpiredSignatureError:
+        raise BadRequestException("Token has expired")
+    except pyjwt.InvalidTokenError as e:
+        raise BadRequestException(f"Invalid token: {e}")
+
     if userId != current_user_id:
         raise BadRequestException("User ID mismatch with authenticated token")
 

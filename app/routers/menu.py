@@ -1,13 +1,20 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
 from typing import List, Optional
+from uuid import UUID
 
 from app.database import get_db
+from app.config import settings
 from app.models import MenuItem, Category
-from app.schemas import MenuItemResponse, CategoryResponse
-from app.cache import cached
+from app.schemas import (
+    CategoryResponse,
+    MenuItemResponse,
+    MenuPageResponse,
+    MenuSyncResponse,
+)
+from app.cache import get_json, set_json
 
 router = APIRouter(prefix="/api/menu", tags=["Menu"])
 
@@ -18,89 +25,182 @@ def _to_menu_response(item: MenuItem) -> MenuItemResponse:
     return MenuItemResponse.model_validate(item)
 
 
-# ─── Endpoints ─────────────────────────────────
+def _menu_from_json(value: list[dict]) -> list[MenuItemResponse]:
+    return [MenuItemResponse.model_validate(item) for item in value]
 
-@router.get("", response_model=List[MenuItemResponse])
-@cached(ttl=120, key="menuItems")
-async def get_menu(db: AsyncSession = Depends(get_db)):
-    """All available menu items (cached 2 min)."""
+
+def _dedupe_menu_items(items: list[MenuItemResponse]) -> list[MenuItemResponse]:
+    seen = set()
+    deduped = []
+    for item in items:
+        key = (item.canteen_id, item.name)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+    return deduped
+
+
+async def _all_cached_menu(db: AsyncSession, canteen_id: Optional[UUID] = None) -> list[MenuItemResponse]:
+    cache_key = f"menu:all:{canteen_id or 'all'}"
+    cached_items = await get_json(cache_key)
+    if cached_items is not None:
+        return _dedupe_menu_items(_menu_from_json(cached_items))
     result = await db.execute(
         select(MenuItem).where(MenuItem.is_available == True).order_by(MenuItem.name)
     )
-    return [_to_menu_response(i) for i in result.scalars().all()]
+    if canteen_id:
+        result = await db.execute(select(MenuItem).where(
+            MenuItem.is_available == True, MenuItem.canteen_id == canteen_id
+        ).order_by(MenuItem.name))
+    items = _dedupe_menu_items([_to_menu_response(i) for i in result.scalars().all()])
+    await set_json(cache_key, [item.model_dump(mode="json") for item in items], settings.MENU_CACHE_TTL_SECONDS)
+    return items
+
+
+async def _category_item_counts(db: AsyncSession) -> dict:
+    result = await db.execute(
+        select(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name)
+        .where(MenuItem.is_available == True)
+        .order_by(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name)
+    )
+    counts: dict = {}
+    seen = set()
+    for category_id, canteen_id, name in result.fetchall():
+        key = (canteen_id, name)
+        if key in seen:
+            continue
+        seen.add(key)
+        counts[category_id] = counts.get(category_id, 0) + 1
+    return counts
+
+
+def _utc_now_naive() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _to_utc_naive(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+# ─── Endpoints ─────────────────────────────────
+
+@router.get("", response_model=List[MenuItemResponse])
+async def get_menu(canteen_id: Optional[UUID] = Query(None, alias="canteenId"), db: AsyncSession = Depends(get_db)):
+    """All available menu items, shared across students."""
+    return await _all_cached_menu(db, canteen_id)
+
+
+@router.get("/paged", response_model=MenuPageResponse)
+async def get_menu_paged(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    category_id: Optional[UUID] = Query(None, alias="categoryId"),
+    canteen_id: Optional[UUID] = Query(None, alias="canteenId"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Paged available menu items for fast first paint and infinite scroll."""
+    all_items = await _all_cached_menu(db, canteen_id)
+    filtered = [item for item in all_items if not category_id or item.category_id == category_id]
+    total = len(filtered)
+    offset = (page - 1) * limit
+    items = filtered[offset:offset + limit]
+    return MenuPageResponse(
+        items=items,
+        total=total,
+        page=page,
+        limit=limit,
+        has_more=offset + len(items) < total,
+    )
+
+
+@router.get("/sync", response_model=MenuSyncResponse)
+async def sync_menu(
+    since: Optional[datetime] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return menu/category rows changed since the Android app's last sync."""
+    category_query = select(Category)
+    item_query = select(MenuItem)
+    if since:
+        since = _to_utc_naive(since)
+        category_query = category_query.where(Category.updated_at > since)
+        item_query = item_query.where(MenuItem.updated_at > since)
+
+    category_result = await db.execute(category_query.order_by(Category.display_order))
+    item_result = await db.execute(item_query.order_by(MenuItem.name))
+    counts = await _category_item_counts(db)
+
+    categories = []
+    for cat in category_result.scalars().all():
+        response = CategoryResponse.model_validate(cat)
+        response.item_count = counts.get(cat.id, 0)
+        categories.append(response)
+
+    return MenuSyncResponse(
+        categories=categories,
+        items=_dedupe_menu_items([_to_menu_response(i) for i in item_result.scalars().all()]),
+        server_time=_utc_now_naive(),
+    )
 
 
 @router.get("/categories", response_model=List[CategoryResponse])
-@cached(ttl=300, key="menuCategories")
 async def get_categories(db: AsyncSession = Depends(get_db)):
-    """All active categories with item counts."""
+    """All active categories with item counts, shared across students."""
+    cached_categories = await get_json("menu:categories")
+    if cached_categories is not None:
+        return [CategoryResponse.model_validate(item) for item in cached_categories]
     result = await db.execute(
         select(Category).where(Category.is_active == True).order_by(Category.display_order)
     )
     categories = result.scalars().all()
 
-    # Count available items per category
-    counts_result = await db.execute(
-        select(MenuItem.category_id, func.count(MenuItem.id))
-        .where(MenuItem.is_available == True)
-        .group_by(MenuItem.category_id)
-    )
-    counts = {row[0]: row[1] for row in counts_result.fetchall()}
+    counts = await _category_item_counts(db)
 
     responses = []
     for cat in categories:
         r = CategoryResponse.model_validate(cat)
         r.item_count = counts.get(cat.id, 0)
         responses.append(r)
+    await set_json("menu:categories", [item.model_dump(mode="json") for item in responses], 300)
     return responses
 
 
-@router.get("/category/{category_id}", response_model=List[MenuItemResponse])
-async def get_items_by_category(category_id: str, db: AsyncSession = Depends(get_db)):
-    """All available items in a specific category."""
-    result = await db.execute(
-        select(MenuItem)
-        .where(MenuItem.category_id == category_id, MenuItem.is_available == True)
-        .order_by(MenuItem.name)
-    )
-    return [_to_menu_response(i) for i in result.scalars().all()]
-
-
 @router.get("/discounts", response_model=List[MenuItemResponse])
-@cached(ttl=120, key="discountItems")
-async def get_discount_items(db: AsyncSession = Depends(get_db)):
+async def get_discount_items(canteen_id: Optional[UUID] = Query(None, alias="canteenId"), db: AsyncSession = Depends(get_db)):
     """Items with active discounts (discount_percent > 0)."""
-    result = await db.execute(
-        select(MenuItem)
-        .where(
-            MenuItem.is_available == True,
-            MenuItem.discount_percent != None,
-            MenuItem.discount_percent > 0
-        )
-        .order_by(MenuItem.discount_percent.desc())
-    )
-    return [_to_menu_response(i) for i in result.scalars().all()]
+    cache_key = f"menu:discounts:{canteen_id or 'all'}"
+    cached_items = await get_json(cache_key)
+    if cached_items is None:
+        items = [item for item in await _all_cached_menu(db, canteen_id) if item.discount_percent and item.discount_percent > 0]
+        items.sort(key=lambda item: item.discount_percent, reverse=True)
+        cached_items = [item.model_dump(mode="json") for item in items]
+        await set_json(cache_key, cached_items, settings.MENU_CACHE_TTL_SECONDS)
+    return _menu_from_json(cached_items)
 
 
 @router.get("/specials", response_model=List[MenuItemResponse])
-@cached(ttl=120, key="specialMenuItems")
-async def get_special_menu(db: AsyncSession = Depends(get_db)):
+async def get_special_menu(canteen_id: Optional[UUID] = Query(None, alias="canteenId"), db: AsyncSession = Depends(get_db)):
     """Items flagged as special offer."""
-    result = await db.execute(
-        select(MenuItem)
-        .where(MenuItem.special_offer == True, MenuItem.is_available == True)
-    )
-    return [_to_menu_response(i) for i in result.scalars().all()]
+    cache_key = f"menu:specials:{canteen_id or 'all'}"
+    cached_items = await get_json(cache_key)
+    if cached_items is None:
+        items = [item for item in await _all_cached_menu(db, canteen_id) if item.special_offer]
+        cached_items = [item.model_dump(mode="json") for item in items]
+        await set_json(cache_key, cached_items, settings.MENU_CACHE_TTL_SECONDS)
+    return _menu_from_json(cached_items)
 
 
 @router.get("/search", response_model=List[MenuItemResponse])
-async def search_menu(q: str = Query(min_length=1), db: AsyncSession = Depends(get_db)):
+async def search_menu(q: str = Query(min_length=1), canteen_id: Optional[UUID] = Query(None, alias="canteenId"), db: AsyncSession = Depends(get_db)):
     """Search menu items by name (case-insensitive)."""
-    result = await db.execute(
-        select(MenuItem)
-        .where(
-            MenuItem.is_available == True,
-            MenuItem.name.ilike(f"%{q}%")
-        )
-    )
-    return [_to_menu_response(i) for i in result.scalars().all()]
+    query = q.casefold()
+    return [item for item in await _all_cached_menu(db, canteen_id) if query in item.name.casefold()]
+
+
+@router.get("/category/{category_id}", response_model=List[MenuItemResponse])
+async def get_items_by_category(category_id: str, canteen_id: Optional[UUID] = Query(None, alias="canteenId"), db: AsyncSession = Depends(get_db)):
+    """All available items in a specific category."""
+    return [item for item in await _all_cached_menu(db, canteen_id) if str(item.category_id) == category_id]
