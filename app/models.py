@@ -34,17 +34,9 @@ college_canteens = Table(
 )
 
 
-class Campus(Base):
-    __tablename__ = "campuses"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, nullable=False, unique=True)
-    is_active = Column(Boolean, nullable=False, default=True)
-
-
 class College(Base):
     __tablename__ = "colleges"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     canteens = relationship("Canteen", secondary=college_canteens, back_populates="colleges")
@@ -53,7 +45,6 @@ class College(Base):
 class Canteen(Base):
     __tablename__ = "canteens"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     auto_accept_orders = Column(Boolean, nullable=False, default=False, server_default="false")
@@ -75,7 +66,6 @@ class User(Base):
     phone = Column(String, nullable=True)
     phone_verified = Column(Boolean, nullable=False, default=False, server_default="false")
     roll_number = Column(String, nullable=True, unique=True, index=True)
-    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=True, index=True)
     college = Column(String, nullable=True)
     college_id = Column(UUID(as_uuid=True), ForeignKey("colleges.id"), nullable=True, index=True)
     preferred_canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
@@ -313,7 +303,6 @@ class Banner(Base):
     starts_at = Column(DateTime, nullable=True)
     ends_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
-    campus_id = Column(UUID(as_uuid=True), ForeignKey("campuses.id"), nullable=True, index=True)
     college_id = Column(UUID(as_uuid=True), ForeignKey("colleges.id"), nullable=True, index=True)
     canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
 

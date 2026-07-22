@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.venv
+venv
+ENV/
+*.pyc
+__pycache__/
+.pytest_cache/
+logs/
+*.log
+.gemini/
+antigravity/
+brain/
+*.err
+*.out

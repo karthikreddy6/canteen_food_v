@@ -555,3 +555,505 @@
 2026-07-22 22:23:54,789 INFO {"req_id": "4183fb9f", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "82bba58c-9eef-43f9-a933-63ad5c58c756", "date": "2026-07-23"}, "request_json": null}
 2026-07-22 22:31:01,467 INFO {"req_id": "cb292487", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5", "date": "2026-07-23"}, "request_json": null}
 2026-07-22 22:31:01,479 INFO {"req_id": "4ebfe61b", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "82bba58c-9eef-43f9-a933-63ad5c58c756", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 00:00:08,900 INFO {"req_id": "168b43a3", "event": "http_request", "method": "POST", "path": "/api/vendor/auth/login", "query": {}, "request_json": {"email": "central@onfood.local", "password": "[REDACTED]"}}
+2026-07-23 00:00:53,956 INFO {"req_id": "bcfa9261", "event": "http_request", "method": "POST", "path": "/api/vendor/auth/login", "query": {}, "request_json": {"email": "central@onfood.local", "password": "[REDACTED]"}}
+2026-07-23 00:00:53,965 INFO {"req_id": "a984d307", "event": "http_request", "method": "GET", "path": "/api/vendor/orders", "query": {}, "request_json": null}
+2026-07-23 00:00:53,968 INFO {"req_id": "db0798e0", "event": "http_request", "method": "GET", "path": "/api/vendor/kitchen/settings", "query": {}, "request_json": null}
+2026-07-23 00:00:53,970 INFO {"req_id": "769a5df5", "event": "http_request", "method": "GET", "path": "/api/vendor/staff", "query": {}, "request_json": null}
+2026-07-23 00:20:32,025 INFO {"req_id": "ba3a0b2b", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 00:23:02,918 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 00:28:40,058 INFO {"req_id": "3c7dfe87", "event": "http_request", "method": "GET", "path": "/", "query": {}, "request_json": null}
+2026-07-23 00:28:40,404 INFO {"req_id": "23601ea1", "event": "http_request", "method": "GET", "path": "/favicon.ico", "query": {}, "request_json": null}
+2026-07-23 00:28:47,696 INFO {"req_id": "05c638a7", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 00:28:48,077 INFO {"req_id": "a3ddb68a", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,078 INFO {"req_id": "fe5dec02", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,080 INFO {"req_id": "d862e3b7", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,081 INFO {"req_id": "d8a6c28a", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,092 INFO {"req_id": "8c60240c", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 00:28:48,145 INFO {"req_id": "94eecc85", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,146 INFO {"req_id": "64285f2d", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,170 INFO {"req_id": "250958b5", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,171 INFO {"req_id": "a3d696a3", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,175 INFO {"req_id": "da4c68b8", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,191 INFO {"req_id": "aa2b3cc2", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,223 INFO {"req_id": "04138341", "event": "http_request", "method": "GET", "path": "/images/chilli-chicken.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,302 INFO {"req_id": "6271eb7e", "event": "http_request", "method": "GET", "path": "/images/buttermilk.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,305 INFO {"req_id": "df192634", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:28:48,326 INFO {"req_id": "af88b409", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 00:28:48,349 INFO {"req_id": "1bfd2c1f", "event": "http_request", "method": "GET", "path": "/images/chilli-chicken.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,413 INFO {"req_id": "3f5d0503", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:28:48,450 INFO {"req_id": "eb56164f", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:28:48,588 INFO {"req_id": "6aed28c6", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,647 INFO {"req_id": "96012561", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,808 INFO {"req_id": "ccfe1fcf", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,816 INFO {"req_id": "a45adaf0", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,915 INFO {"req_id": "0c3fd742", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 00:28:48,931 INFO {"req_id": "fe8afdbe", "event": "http_request", "method": "GET", "path": "/images/banner1.png", "query": {}, "request_json": null}
+2026-07-23 00:28:55,539 INFO {"req_id": "d270ef1f", "event": "http_request", "method": "GET", "path": "/sounds/bell.wav", "query": {}, "request_json": null}
+2026-07-23 00:28:55,558 INFO {"req_id": "f8be6c4a", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "e41a897f-9c76-45a5-a0b9-db5f85b5790b", "quantity": 3}]}}
+2026-07-23 00:28:55,694 INFO {"req_id": "a1e6e5a0", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 00:28:56,957 INFO {"req_id": "7dd5ae47", "event": "http_request", "method": "POST", "path": "/api/orders", "query": {}, "request_json": {"items": [{"menuItemId": "e41a897f-9c76-45a5-a0b9-db5f85b5790b", "quantity": 3}], "notes": "Prepared immediately", "totalAmount": 540.0}}
+2026-07-23 00:28:59,501 INFO {"req_id": "c6c7cbbb", "event": "http_request", "method": "GET", "path": "/api/orders/88baed8d-d496-4ef4-8eda-d243bd298a60", "query": {}, "request_json": null}
+2026-07-23 00:29:08,944 INFO {"req_id": "0020087f", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:29:08,946 INFO {"req_id": "65554ebf", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 00:29:08,954 INFO {"req_id": "fbf06a8f", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 00:29:09,022 INFO {"req_id": "dd0666a3", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:29:09,027 INFO {"req_id": "d2e26e58", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:29:11,485 INFO {"req_id": "ad24c5f1", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "20"}, "request_json": null}
+2026-07-23 00:29:15,531 INFO {"req_id": "871b33db", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:29:15,542 INFO {"req_id": "dd7af0af", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:29:22,480 INFO {"req_id": "7897057a", "event": "http_request", "method": "GET", "path": "/api/help/faq", "query": {}, "request_json": null}
+2026-07-23 00:29:28,699 INFO {"req_id": "725bf6aa", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:29:28,707 INFO {"req_id": "276dbaec", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:29:38,539 INFO {"req_id": "1653d46c", "event": "http_request", "method": "POST", "path": "/api/auth/logout", "query": {}, "request_json": null}
+2026-07-23 00:29:48,228 INFO {"req_id": "48234edd", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 00:29:48,501 INFO {"req_id": "07b4f884", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 00:29:48,510 INFO {"req_id": "50bfe837", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:29:48,515 INFO {"req_id": "9df4b00a", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 00:29:48,667 INFO {"req_id": "aecd94cf", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:29:48,674 INFO {"req_id": "4197c324", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:29:50,485 INFO {"req_id": "5527caa5", "event": "http_request", "method": "POST", "path": "/api/auth/logout", "query": {}, "request_json": null}
+2026-07-23 00:29:54,084 INFO {"req_id": "ad615055", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthik@example.com", "password": "[REDACTED]"}}
+2026-07-23 00:31:36,493 INFO {"req_id": "926ddc74", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 00:31:36,748 INFO {"req_id": "b6eec148", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 00:31:36,767 INFO {"req_id": "d4625fcb", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:31:36,770 INFO {"req_id": "7deb520f", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 00:31:36,953 INFO {"req_id": "5b867e93", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:31:36,958 INFO {"req_id": "d805a89e", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:31:46,993 INFO {"req_id": "3d1937d7", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:31:47,002 INFO {"req_id": "595860a0", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:31:56,975 INFO {"req_id": "b6336ff5", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:31:56,985 INFO {"req_id": "95242f02", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:32:06,983 INFO {"req_id": "5a0f71ed", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:32:06,988 INFO {"req_id": "8c9070f0", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:37:44,040 INFO {"req_id": "398870e9", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:37:44,050 INFO {"req_id": "f7f03f65", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:37:45,530 INFO {"req_id": "fff6fc3a", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "5b41e527-7dbe-4cf4-a945-c514e81eff54", "quantity": 1}]}}
+2026-07-23 00:37:45,538 INFO {"req_id": "db0d1106", "event": "http_request", "method": "GET", "path": "/sounds/bell.wav", "query": {}, "request_json": null}
+2026-07-23 00:37:45,674 INFO {"req_id": "471ee36f", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 00:37:46,384 INFO {"req_id": "25aadb8c", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23", "canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:44:27,383 INFO {"req_id": "8a20e0fa", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23", "canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:44:57,640 INFO {"req_id": "4e4edd0e", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:44:57,676 INFO {"req_id": "961dc91e", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:45:10,258 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 00:45:13,067 INFO {"req_id": "9542cc5e", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 00:45:13,379 INFO {"req_id": "10b1c542", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 00:45:13,430 INFO {"req_id": "073b53ef", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:45:13,433 INFO {"req_id": "5781662e", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 00:45:13,516 INFO {"req_id": "8ee3a872", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:45:13,524 INFO {"req_id": "6abe9a44", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:45:16,893 INFO {"req_id": "cefdc6b7", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:45:16,903 INFO {"req_id": "b6246724", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:45:18,209 INFO {"req_id": "7cc491e3", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "5b41e527-7dbe-4cf4-a945-c514e81eff54", "quantity": 1}]}}
+2026-07-23 00:45:18,299 INFO {"req_id": "b3d8a58c", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 00:45:19,089 INFO {"req_id": "568094b6", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23", "canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:46:51,776 INFO {"req_id": "d8c65900", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 00:46:51,782 INFO {"req_id": "3b66a8af", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "82bba58c-9eef-43f9-a933-63ad5c58c756", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 00:47:20,376 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 00:47:22,474 INFO {"req_id": "e743e5e6", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 00:47:22,508 INFO {"req_id": "63f9c160", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 00:47:23,202 INFO {"req_id": "92dbb08a", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "5b41e527-7dbe-4cf4-a945-c514e81eff54", "quantity": 1}]}}
+2026-07-23 00:47:23,313 INFO {"req_id": "c057ebd4", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 00:47:24,780 INFO {"req_id": "ab07399e", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23", "canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 00:48:42,153 INFO {"req_id": "c4811ad8", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 00:48:42,157 INFO {"req_id": "a7ff5a5c", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "82bba58c-9eef-43f9-a933-63ad5c58c756", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 00:49:43,745 INFO {"req_id": "c3afbdc9", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 00:50:53,032 INFO {"req_id": "2647c8f4", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23"}, "request_json": null}
+2026-07-23 01:03:06,691 INFO {"req_id": "1d47b43c", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:03:06,699 INFO {"req_id": "77106cd8", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {"collegeId": "9a2b8349-1f4a-4684-8a3c-d7e4838299d3"}, "request_json": null}
+2026-07-23 01:04:02,124 INFO {"req_id": "10bede13", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:04:02,147 INFO {"req_id": "ceb311ad", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:05:00,508 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 01:05:02,497 INFO {"req_id": "5666b28a", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:05:02,790 INFO {"req_id": "bfdb082f", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:05:02,841 INFO {"req_id": "3e4fb99e", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:05:02,844 INFO {"req_id": "14c3ee87", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:05:02,953 INFO {"req_id": "c00c3346", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:05:02,971 INFO {"req_id": "f716e9f3", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:05:12,971 INFO {"req_id": "13751e06", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:05:12,979 INFO {"req_id": "b40a9215", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:05:22,985 INFO {"req_id": "b556e6e7", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:05:22,993 INFO {"req_id": "369edb1b", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:05:33,087 INFO {"req_id": "e9bb1370", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:05:33,098 INFO {"req_id": "c7410cbe", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:08:19,477 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 01:08:23,881 INFO {"req_id": "88484d26", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:08:24,237 INFO {"req_id": "ea4d7729", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:08:24,279 INFO {"req_id": "b5c01f8a", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:08:24,280 INFO {"req_id": "8c67321a", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:08:24,397 INFO {"req_id": "eb3ac9f7", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:08:24,404 INFO {"req_id": "b809fd4e", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:08:34,417 INFO {"req_id": "512a67d6", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:08:34,428 INFO {"req_id": "46a36e5e", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:08:35,237 INFO {"req_id": "d636fb5f", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,290 INFO {"req_id": "56229435", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,307 INFO {"req_id": "7cf9fec8", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,337 INFO {"req_id": "f2112ca4", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,352 INFO {"req_id": "0297d678", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,366 INFO {"req_id": "f458946f", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,393 INFO {"req_id": "d6722ef2", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,459 INFO {"req_id": "3a5126d3", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,473 INFO {"req_id": "db1d271f", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 01:08:35,501 INFO {"req_id": "ff9a896e", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,002 INFO {"req_id": "44302361", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,060 INFO {"req_id": "25db007e", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,083 INFO {"req_id": "545154ca", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,139 INFO {"req_id": "0596d04f", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,221 INFO {"req_id": "8000078a", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,285 INFO {"req_id": "da90f836", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,322 INFO {"req_id": "0678ff63", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,365 INFO {"req_id": "b1793570", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,385 INFO {"req_id": "5d1a33f5", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:08:36,454 INFO {"req_id": "6317c854", "event": "http_request", "method": "GET", "path": "/images/banner1.png", "query": {}, "request_json": null}
+2026-07-23 01:08:44,453 INFO {"req_id": "01ba4c3e", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:08:44,458 INFO {"req_id": "b26bcc58", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:08:54,444 INFO {"req_id": "44488a63", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:08:54,457 INFO {"req_id": "5abe31ee", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:09:04,434 INFO {"req_id": "b836a982", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:09:04,441 INFO {"req_id": "97a4e91c", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:09:14,462 INFO {"req_id": "eb9d8402", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:09:14,471 INFO {"req_id": "b85b901a", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:09:24,459 INFO {"req_id": "81fc322f", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:09:24,466 INFO {"req_id": "ee1edc78", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:10:21,241 INFO {"req_id": "8df9aed9", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:10:21,256 INFO {"req_id": "6ceace43", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:10:22,373 INFO {"req_id": "d4ea1dca", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:10:26,617 INFO {"req_id": "136e8ed2", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:10:39,184 INFO {"req_id": "960dd310", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:37,020 INFO {"req_id": "6b0ddb12", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:37,029 INFO {"req_id": "c93af845", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:37,035 INFO {"req_id": "b1a8ea36", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:11:37,040 INFO {"req_id": "5f918081", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:11:45,473 INFO {"req_id": "54ac2845", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:45,485 INFO {"req_id": "cf0295a7", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:45,490 INFO {"req_id": "3e215509", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:11:45,498 INFO {"req_id": "bd998fc9", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:11:58,683 INFO {"req_id": "df3796b0", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:58,690 INFO {"req_id": "7d10bd28", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:11:58,697 INFO {"req_id": "947d0d7d", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:11:58,702 INFO {"req_id": "39daae5e", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:11:58,712 INFO {"req_id": "1b67707f", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:18:33,410 INFO {"req_id": "d81773d2", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:18:33,638 INFO {"req_id": "fd5f8cc2", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,641 INFO {"req_id": "d88d71fa", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,652 INFO {"req_id": "194df0ea", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,653 INFO {"req_id": "f2dc93c6", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,685 INFO {"req_id": "420ddb88", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:18:33,692 INFO {"req_id": "23fdc160", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,714 INFO {"req_id": "42812be5", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:18:33,717 INFO {"req_id": "f7f1db07", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,724 INFO {"req_id": "16699287", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:18:33,733 INFO {"req_id": "d97b7242", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,738 INFO {"req_id": "8cd2d204", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,740 INFO {"req_id": "c2492ecb", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,774 INFO {"req_id": "e8adbc22", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,776 INFO {"req_id": "8fa30366", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,826 INFO {"req_id": "146533e0", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,830 INFO {"req_id": "c134f721", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,889 INFO {"req_id": "cf875ba6", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,890 INFO {"req_id": "a3bac7ac", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 01:18:33,999 INFO {"req_id": "232c8e22", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 01:18:34,001 INFO {"req_id": "bf755398", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:18:34,012 INFO {"req_id": "594f4758", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:18:34,123 INFO {"req_id": "f620325b", "event": "http_request", "method": "GET", "path": "/images/banner1.png", "query": {}, "request_json": null}
+2026-07-23 01:18:34,336 INFO {"req_id": "06aa0ad7", "event": "http_request", "method": "GET", "path": "/api/orders/stream/4e310626-75f1-4375-86a7-07ac3ca9843f", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTA2MTN9.PzlkRNL6J1MZjG8zy90jdvjxfahv8ntVXXYNXY9OfRo"}, "request_json": null}
+2026-07-23 01:18:39,518 INFO {"req_id": "9fb257f1", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 01:18:39,581 INFO {"req_id": "09f3acfc", "event": "http_request", "method": "GET", "path": "/api/orders/stream/4e310626-75f1-4375-86a7-07ac3ca9843f", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTA2MTl9.dXDj5G6GQ399_cNX4FG4uOPGGakVoQ5Z07KljDndLqM"}, "request_json": null}
+2026-07-23 01:18:43,990 INFO {"req_id": "e62284d1", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:18:44,005 INFO {"req_id": "ccfe1d6a", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:18:44,627 INFO {"req_id": "db300750", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 01:18:44,699 INFO {"req_id": "dc4064b9", "event": "http_request", "method": "GET", "path": "/api/orders/stream/4e310626-75f1-4375-86a7-07ac3ca9843f", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTA2MjR9.u0_JYOPGnu7qiwMQc4UbiozoUNcb90_n9kEGxHjPyFQ"}, "request_json": null}
+2026-07-23 01:18:49,791 INFO {"req_id": "95865078", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 01:18:49,865 INFO {"req_id": "06f9158f", "event": "http_request", "method": "GET", "path": "/api/orders/stream/4e310626-75f1-4375-86a7-07ac3ca9843f", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTA2Mjl9.q4_yICMBPR66DAfirfBc9pTXEEw9kC_2hJTcpekQuNo"}, "request_json": null}
+2026-07-23 01:18:51,881 INFO {"req_id": "c876352a", "event": "http_request", "method": "GET", "path": "/api/locations/colleges/9baadc74-39aa-4274-bcd5-63e43a59ab40/canteens", "query": {}, "request_json": null}
+2026-07-23 01:18:54,011 INFO {"req_id": "9b23e5e9", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:18:54,015 INFO {"req_id": "0b7f1942", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:18:54,919 INFO {"req_id": "73567f1c", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 01:18:54,975 INFO {"req_id": "c76c36dc", "event": "http_request", "method": "GET", "path": "/api/orders/stream/4e310626-75f1-4375-86a7-07ac3ca9843f", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTA2MzR9.mxBRjGGX1S_DHawMXFa6iDLNAsGlXp8bMsgzTqBtr_s"}, "request_json": null}
+2026-07-23 01:19:00,049 INFO {"req_id": "02e8836c", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 01:19:00,115 INFO {"req_id": "57dca364", "event": "http_request", "method": "GET", "path": "/api/orders/stream/4e310626-75f1-4375-86a7-07ac3ca9843f", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTA2NDB9.pHDneV-AS0xMQ43e6zQzaAsLgN4tUewrCiB6wcEu8SU"}, "request_json": null}
+2026-07-23 01:19:20,866 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 01:20:05,565 INFO {"req_id": "90c8c279", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:20:05,932 INFO {"req_id": "5856d0e4", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:20:05,969 INFO {"req_id": "8e99c219", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:20:05,975 INFO {"req_id": "3157b803", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:20:06,014 INFO {"req_id": "3a6bb8e9", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:20:06,042 INFO {"req_id": "f142b511", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:20:15,936 INFO {"req_id": "95bb0ba0", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:20:15,950 INFO {"req_id": "71ca0874", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:20:25,935 INFO {"req_id": "5fc0a105", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:20:25,963 INFO {"req_id": "33b84fdc", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:20:34,399 INFO {"req_id": "d2ace32a", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:20:34,408 INFO {"req_id": "e0da1106", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:20:35,579 INFO {"req_id": "23d037f0", "event": "http_request", "method": "POST", "path": "/api/auth/logout", "query": {}, "request_json": null}
+2026-07-23 01:22:22,822 INFO {"req_id": "3017c03e", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:22:22,831 INFO {"req_id": "9b6a36c0", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:22:22,836 INFO {"req_id": "f3dc5b42", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:22:22,844 INFO {"req_id": "0e8d07d6", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:22:22,854 INFO {"req_id": "39b06353", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:22:44,477 INFO {"req_id": "7c6fa0d3", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:22:44,708 INFO {"req_id": "0ce89a59", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:22:44,727 INFO {"req_id": "cd7aa2de", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:22:44,730 INFO {"req_id": "1bbdb1ad", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:22:44,970 INFO {"req_id": "c57ef5a4", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:22:44,971 INFO {"req_id": "1a28b15b", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 01:22:44,976 INFO {"req_id": "99d4c38d", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:22:44,977 INFO {"req_id": "db326fcd", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,059 INFO {"req_id": "26a8d63b", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,069 INFO {"req_id": "1501ce5e", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,101 INFO {"req_id": "85a90e18", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,113 INFO {"req_id": "8f632dbc", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,122 INFO {"req_id": "581191da", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,125 INFO {"req_id": "83f93bc6", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,147 INFO {"req_id": "d51f88b0", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,199 INFO {"req_id": "54a3fc18", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,203 INFO {"req_id": "0abb9b91", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,346 INFO {"req_id": "a6742a76", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,347 INFO {"req_id": "b21bf299", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,349 INFO {"req_id": "6e6f3d88", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,500 INFO {"req_id": "9b1d5d31", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,626 INFO {"req_id": "c858a533", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:22:45,793 INFO {"req_id": "19c2e1b2", "event": "http_request", "method": "GET", "path": "/images/banner1.png", "query": {}, "request_json": null}
+2026-07-23 01:22:47,107 INFO {"req_id": "001a30ea", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:22:47,121 INFO {"req_id": "a73c0190", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:22:57,150 INFO {"req_id": "80235815", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:22:57,158 INFO {"req_id": "17294df7", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:23:07,137 INFO {"req_id": "fb2158fa", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:23:07,148 INFO {"req_id": "a9633de2", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:23:17,140 INFO {"req_id": "02cd2329", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:23:17,152 INFO {"req_id": "45667569", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:23:26,902 INFO {"req_id": "697bf5d7", "event": "http_request", "method": "GET", "path": "/sounds/bell.wav", "query": {}, "request_json": null}
+2026-07-23 01:23:26,930 INFO {"req_id": "b9a73e42", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "d8f99783-9f08-4aff-acec-2914cd25e32c", "quantity": 1}]}}
+2026-07-23 01:23:27,057 INFO {"req_id": "3e117eb4", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 01:23:28,460 INFO {"req_id": "00472e80", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23", "canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:25:21,831 INFO {"req_id": "090d6062", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:25:21,866 INFO {"req_id": "9eb5a88f", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:26:23,611 INFO {"req_id": "bdfc79da", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:26:23,650 INFO {"req_id": "9139b5b3", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:28:03,759 INFO {"req_id": "d32cffe7", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:28:03,766 INFO {"req_id": "4a84970d", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:28:03,810 INFO {"req_id": "bbc4165d", "event": "http_request", "method": "POST", "path": "/api/auth/refresh", "query": {}, "request_json": {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJqdGkiOiJhRVFyZV9LR0x1cXRFSWtPLTIxV1VjZHpfbWVJUDlkYUVLMkUtODN5QWI4IiwidmVyIjoxNCwidHlwZSI6InJlZnJlc2giLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODczNDE5NjR9.rpRktvahjIc3VUDFORznZDkxW5U2fq4xH4AQDJUCoI0"}}
+2026-07-23 01:28:14,603 INFO {"req_id": "66dd1403", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:28:14,831 INFO {"req_id": "c71ca322", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:28:14,835 INFO {"req_id": "3a95338f", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:28:14,840 INFO {"req_id": "95861935", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:28:14,980 INFO {"req_id": "a36d1986", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:28:14,983 INFO {"req_id": "88afb70e", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:28:42,468 INFO {"req_id": "8506556e", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:28:42,766 INFO {"req_id": "d5fd0b7d", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:28:42,775 INFO {"req_id": "939f04f9", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:28:42,783 INFO {"req_id": "2a11bbe6", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:28:42,934 INFO {"req_id": "c9714384", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:28:42,937 INFO {"req_id": "ef9945eb", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:28:42,938 INFO {"req_id": "dfa34e0e", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:28:42,940 INFO {"req_id": "7cba6e7f", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 01:28:42,975 INFO {"req_id": "54a8ab1a", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 01:28:42,976 INFO {"req_id": "f30493b0", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,021 INFO {"req_id": "1ead71c9", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,022 INFO {"req_id": "919a856f", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,023 INFO {"req_id": "962568b4", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,024 INFO {"req_id": "8214fa43", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,135 INFO {"req_id": "a099aa19", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,137 INFO {"req_id": "9359bdcb", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,176 INFO {"req_id": "4bfaa3aa", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,267 INFO {"req_id": "4fb7c7db", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,442 INFO {"req_id": "fa299565", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,514 INFO {"req_id": "6084f5c8", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,551 INFO {"req_id": "cb897e01", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,614 INFO {"req_id": "5659fb34", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:28:43,655 INFO {"req_id": "d5c4e18c", "event": "http_request", "method": "GET", "path": "/images/banner1.png", "query": {}, "request_json": null}
+2026-07-23 01:28:44,294 INFO {"req_id": "e956b68c", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:28:44,312 INFO {"req_id": "ea17e1cd", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:28:46,679 INFO {"req_id": "eaa04b79", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:28:52,254 INFO {"req_id": "786f18f7", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:31:17,846 INFO {"req_id": "b53b0786", "event": "http_request", "method": "POST", "path": "/api/auth/logout", "query": {}, "request_json": null}
+2026-07-23 01:31:21,295 INFO {"req_id": "f49d2c10", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:31:21,492 INFO {"req_id": "60292e49", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:31:21,518 INFO {"req_id": "8b6ef68e", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:31:21,521 INFO {"req_id": "40f4c9f7", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:31:21,727 INFO {"req_id": "f01324db", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:31:21,739 INFO {"req_id": "86b3ab92", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:33:18,919 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 01:33:22,460 INFO {"req_id": "eac5b9ce", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:33:22,695 INFO {"req_id": "acf75f89", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:33:22,740 INFO {"req_id": "05a236b7", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:33:22,821 INFO {"req_id": "eb892b0c", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:33:22,841 INFO {"req_id": "c5f99210", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:33:22,849 INFO {"req_id": "e536774b", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "6bf2cde6-415f-46ec-906e-48f68f1394e5"}, "request_json": null}
+2026-07-23 01:33:32,840 INFO {"req_id": "c5026b94", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:33:32,863 INFO {"req_id": "f92dc6e9", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:33:42,847 INFO {"req_id": "9b800679", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:33:42,857 INFO {"req_id": "65313fb6", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:33:52,838 INFO {"req_id": "dbbdc7aa", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:33:52,845 INFO {"req_id": "c3fc3891", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:37:26,806 INFO {"req_id": "725588f6", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:37:26,826 INFO {"req_id": "5e12df4a", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:40:43,812 INFO {"req_id": "0f2be83a", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "3329f7fb-4ab2-4630-86f0-ccb615efe869", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 01:40:43,822 INFO {"req_id": "0a8fcc1e", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"canteenId": "8fff6cbd-2090-4bc0-8fb5-f1bb9ef30bb0", "date": "2026-07-23"}, "request_json": null}
+2026-07-23 01:40:58,180 INFO {"req_id": "5d6599c3", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:40:58,199 INFO {"req_id": "194f74e7", "event": "http_request", "method": "GET", "path": "/api/locations/colleges", "query": {}, "request_json": null}
+2026-07-23 01:40:58,212 INFO {"req_id": "eadab285", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:40:58,230 INFO {"req_id": "fa85eda9", "event": "http_request", "method": "GET", "path": "/api/locations/canteens", "query": {}, "request_json": null}
+2026-07-23 01:40:58,260 INFO {"req_id": "31b9a5bf", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "3329f7fb-4ab2-4630-86f0-ccb615efe869"}, "request_json": null}
+2026-07-23 01:42:50,807 INFO {"req_id": "bdaeeff6", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:42:50,816 INFO {"req_id": "ca0a1a55", "event": "http_request", "method": "GET", "path": "/api/menu/sync", "query": {}, "request_json": null}
+2026-07-23 01:42:51,280 INFO {"req_id": "e1388419", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,282 INFO {"req_id": "1ce5eaf7", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,291 INFO {"req_id": "f0bec670", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:42:51,297 INFO {"req_id": "6560ac67", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,304 INFO {"req_id": "1c88cf7a", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {}, "request_json": null}
+2026-07-23 01:42:51,307 INFO {"req_id": "609cf980", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,313 INFO {"req_id": "1caddc66", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:42:51,319 INFO {"req_id": "6b685903", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,338 INFO {"req_id": "b6e25e24", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,357 INFO {"req_id": "4c639677", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,370 INFO {"req_id": "aa353509", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,377 INFO {"req_id": "54dfd255", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,385 INFO {"req_id": "fbeeed45", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,459 INFO {"req_id": "cf8f42fe", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,464 INFO {"req_id": "6802b16d", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,474 INFO {"req_id": "eff9737e", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,523 INFO {"req_id": "7ba238b0", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,629 INFO {"req_id": "71ec40f0", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 01:42:51,834 INFO {"req_id": "2951f45d", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:42:51,851 INFO {"req_id": "1ceae615", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:42:51,938 INFO {"req_id": "b450392d", "event": "http_request", "method": "POST", "path": "/api/auth/refresh", "query": {}, "request_json": {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZTMxMDYyNi03NWYxLTQzNzUtODZhNy0wN2FjM2NhOTg0M2YiLCJqdGkiOiI2ZGpaSjIybXNmSXg5WFY3Uk13ekRfXzV6RHhkd2UyM3AzSmoxMHpnNk9RIiwidmVyIjoyMSwidHlwZSI6InJlZnJlc2giLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODczNDI2MDJ9.va7QjDPjqJtUAGTDQM5ox1zWdC8hMyQMKfxbfIKtZPQ"}}
+2026-07-23 01:42:51,972 INFO {"req_id": "ba692923", "event": "http_request", "method": "GET", "path": "/images/banner1.png", "query": {}, "request_json": null}
+2026-07-23 01:45:32,057 INFO {"req_id": "e37e0555", "event": "http_request", "method": "GET", "path": "/", "query": {}, "request_json": null}
+2026-07-23 01:45:32,246 INFO {"req_id": "a775f1c9", "event": "http_request", "method": "GET", "path": "/favicon.ico", "query": {}, "request_json": null}
+2026-07-23 01:53:01,004 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 01:53:10,976 INFO {"req_id": "66ae9b4a", "event": "http_request", "method": "POST", "path": "/api/auth/login", "query": {}, "request_json": {"email": "karthikk@g.com", "password": "[REDACTED]"}}
+2026-07-23 01:53:11,443 INFO {"req_id": "be817001", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 01:53:11,563 INFO {"req_id": "46a4e267", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "3329f7fb-4ab2-4630-86f0-ccb615efe869"}, "request_json": null}
+2026-07-23 01:53:11,579 INFO {"req_id": "47b72f8e", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 01:53:11,605 INFO {"req_id": "f8cc03a0", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:53:11,610 INFO {"req_id": "4b91c6ed", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:53:21,362 INFO {"req_id": "4d5733fb", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:53:21,368 INFO {"req_id": "1bfc10a0", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:53:31,358 INFO {"req_id": "5433ce1a", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:53:31,381 INFO {"req_id": "501e7bae", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:53:41,363 INFO {"req_id": "bae36f8f", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:53:41,375 INFO {"req_id": "ca6ce704", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:53:51,375 INFO {"req_id": "c0364a7c", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:53:51,381 INFO {"req_id": "c9b84c4f", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:54:01,358 INFO {"req_id": "bc9b4a92", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:54:01,366 INFO {"req_id": "5caae748", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:54:11,381 INFO {"req_id": "eeca74bb", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:54:11,390 INFO {"req_id": "ddfff228", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:54:21,391 INFO {"req_id": "2b3ec265", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:54:21,392 INFO {"req_id": "72ad8b32", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:54:31,379 INFO {"req_id": "6e4dda64", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:54:31,386 INFO {"req_id": "c5b26005", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:54:41,387 INFO {"req_id": "9d42ff07", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:54:41,393 INFO {"req_id": "d815117c", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:54:51,383 INFO {"req_id": "e464d81f", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:54:51,389 INFO {"req_id": "1cdb48b9", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:55:01,388 INFO {"req_id": "13aea67c", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:55:01,395 INFO {"req_id": "ad352885", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:55:11,387 INFO {"req_id": "e0841934", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:55:11,395 INFO {"req_id": "82c49a8b", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:55:21,415 INFO {"req_id": "41a86afc", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:55:21,421 INFO {"req_id": "bb50ebdf", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:55:31,398 INFO {"req_id": "6c1ec6ff", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:55:31,403 INFO {"req_id": "de98fbe5", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:55:41,410 INFO {"req_id": "9fa1ca9f", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:55:41,411 INFO {"req_id": "51f77594", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:55:51,404 INFO {"req_id": "48acf6f7", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:55:51,410 INFO {"req_id": "ba67a152", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:56:01,400 INFO {"req_id": "c7e8f232", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:56:01,405 INFO {"req_id": "00cf8dd3", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:56:44,767 INFO {"req_id": "16b9c580", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:56:44,774 INFO {"req_id": "fb70d0c2", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:56:46,518 INFO {"req_id": "170c3994", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "4f4c2909-242a-484c-bdfa-3547dd21222d", "quantity": 1}]}}
+2026-07-23 01:56:46,605 INFO {"req_id": "5802eb8c", "event": "http_request", "method": "GET", "path": "/sounds/bell.wav", "query": {}, "request_json": null}
+2026-07-23 01:56:46,676 INFO {"req_id": "7d46170a", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 01:56:47,361 INFO {"req_id": "ba0cc622", "event": "http_request", "method": "GET", "path": "/api/orders/schedule/slots", "query": {"date": "2026-07-23", "canteenId": "3329f7fb-4ab2-4630-86f0-ccb615efe869"}, "request_json": null}
+2026-07-23 01:57:04,793 INFO {"req_id": "97b85418", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:57:04,803 INFO {"req_id": "1301b432", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:57:07,031 INFO {"req_id": "d86c6b1a", "event": "http_request", "method": "GET", "path": "/api/locations/colleges/91c10188-3c58-4f9d-b15a-bca17ccf7f48/canteens", "query": {}, "request_json": null}
+2026-07-23 01:57:18,664 INFO {"req_id": "821cdb93", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:57:18,671 INFO {"req_id": "491c8ea6", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 01:57:20,894 INFO {"req_id": "5bf61f97", "event": "http_request", "method": "GET", "path": "/api/locations/colleges/91c10188-3c58-4f9d-b15a-bca17ccf7f48/canteens", "query": {}, "request_json": null}
+2026-07-23 01:57:22,967 INFO {"req_id": "b97ee2b0", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "20"}, "request_json": null}
+2026-07-23 01:57:24,401 INFO {"req_id": "48cacc36", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "20"}, "request_json": null}
+2026-07-23 01:57:27,536 INFO {"req_id": "1715b0b8", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 01:57:27,538 INFO {"req_id": "c20cb24a", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:01:35,656 INFO {"req_id": "25796fe6", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "20"}, "request_json": null}
+2026-07-23 02:01:36,118 INFO {"req_id": "6ba92119", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:01:36,122 INFO {"req_id": "2256ad83", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:01:37,588 INFO {"req_id": "f41ec163", "event": "http_request", "method": "PUT", "path": "/api/cart", "query": {}, "request_json": {"items": [{"menuItemId": "4f4c2909-242a-484c-bdfa-3547dd21222d", "quantity": 1}]}}
+2026-07-23 02:01:37,750 INFO {"req_id": "64a7a66e", "event": "http_request", "method": "POST", "path": "/api/cart/validate", "query": {}, "request_json": null}
+2026-07-23 02:01:39,807 INFO {"req_id": "aae0a1e1", "event": "http_request", "method": "POST", "path": "/api/orders", "query": {}, "request_json": {"items": [{"menuItemId": "4f4c2909-242a-484c-bdfa-3547dd21222d", "quantity": 1}], "notes": "Prepared immediately", "totalAmount": 130.0}}
+2026-07-23 02:01:39,990 INFO {"req_id": "be3f93d6", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:01:40,055 INFO {"req_id": "e3b2f367", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMxOTl9.woSsdYLt12hVFGtcpvyWgzYeAgLwH9FU90GdURPSoVY"}, "request_json": null}
+2026-07-23 02:01:42,388 INFO {"req_id": "82ed05e6", "event": "http_request", "method": "GET", "path": "/api/orders/40fa9645-1377-41fb-8222-b7d36c9d1ce5", "query": {}, "request_json": null}
+2026-07-23 02:01:42,533 INFO {"req_id": "a682e8c0", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:01:42,669 INFO {"req_id": "9cb8b8e0", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMDJ9.vJsp5QyRSBjox8iBj_QchN8Srpq4Etdl-Z4W-Gm-TYU"}, "request_json": null}
+2026-07-23 02:01:43,707 INFO {"req_id": "3b96866f", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 02:01:43,711 INFO {"req_id": "ffc703fd", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 02:01:43,715 INFO {"req_id": "8bcb3355", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "3329f7fb-4ab2-4630-86f0-ccb615efe869"}, "request_json": null}
+2026-07-23 02:01:43,840 INFO {"req_id": "a60c22ca", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:01:43,851 INFO {"req_id": "5c33ec9f", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:01:43,857 INFO {"req_id": "d8375e88", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:01:43,906 INFO {"req_id": "6ed910de", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMDN9.b0VQFopSx6JHGS-cVfSepdkESSbeRr2YMP97JaBDNxA"}, "request_json": null}
+2026-07-23 02:01:48,942 INFO {"req_id": "781580eb", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:01:48,967 INFO {"req_id": "7b1ba591", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMDh9.ALl64kBoNHHQkYwV5jXrHbEi3SnkgR778eOJzpV5z4k"}, "request_json": null}
+2026-07-23 02:01:53,847 INFO {"req_id": "9d195ef3", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:01:53,856 INFO {"req_id": "0ddef705", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:01:53,997 INFO {"req_id": "c220e99e", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:01:54,021 INFO {"req_id": "116d4f3f", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMTN9.KKTI5vDXPBkbgf6ndDFHbU3SU0AAoH2-hM2dJCa1zIM"}, "request_json": null}
+2026-07-23 02:01:59,090 INFO {"req_id": "69d16f7a", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:01:59,139 INFO {"req_id": "5a0005bd", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMTl9.lQyyKz2dbLxhQ1FNJ7232w25H4LRVrxWtv0yjSn3SwQ"}, "request_json": null}
+2026-07-23 02:02:04,204 INFO {"req_id": "664061e0", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:02:04,244 INFO {"req_id": "08142f29", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMjR9.N1puujlOJ1HsxaReSLOVpEQS-RNgr6oDTk2VjWJAR4g"}, "request_json": null}
+2026-07-23 02:02:09,354 INFO {"req_id": "af37f64d", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:02:09,418 INFO {"req_id": "8afcbd2b", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMjl9.L-xbwDAg7EQl9qUuVmaDiR8ldwZF5U2L1o-bnssV1tU"}, "request_json": null}
+2026-07-23 02:06:33,800 INFO {"req_id": "8192283e", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMTN9.KKTI5vDXPBkbgf6ndDFHbU3SU0AAoH2-hM2dJCa1zIM"}, "request_json": null}
+2026-07-23 02:07:30,911 INFO {"req_id": "1471b634", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMTN9.KKTI5vDXPBkbgf6ndDFHbU3SU0AAoH2-hM2dJCa1zIM"}, "request_json": null}
+2026-07-23 02:07:41,916 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 02:07:47,611 INFO {"req_id": "df9055da", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMTN9.KKTI5vDXPBkbgf6ndDFHbU3SU0AAoH2-hM2dJCa1zIM"}, "request_json": null}
+2026-07-23 02:07:58,952 INFO {"req_id": "c7738111", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTMyMTN9.KKTI5vDXPBkbgf6ndDFHbU3SU0AAoH2-hM2dJCa1zIM"}, "request_json": null}
+2026-07-23 02:09:44,093 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 02:10:26,654 INFO {"req_id": "4b2c4ebb", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:10:26,666 INFO {"req_id": "11be6630", "event": "http_request", "method": "GET", "path": "/api/menu/sync", "query": {}, "request_json": null}
+2026-07-23 02:10:26,901 INFO {"req_id": "be2da956", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 02:10:26,904 INFO {"req_id": "f20ea472", "event": "http_request", "method": "GET", "path": "/icons/south-indian.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,908 INFO {"req_id": "324b25fd", "event": "http_request", "method": "GET", "path": "/icons/curries.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,912 INFO {"req_id": "e57c264b", "event": "http_request", "method": "GET", "path": "/icons/breads.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,913 INFO {"req_id": "d5ef9d0c", "event": "http_request", "method": "GET", "path": "/api/menu", "query": {"canteenId": "3329f7fb-4ab2-4630-86f0-ccb615efe869"}, "request_json": null}
+2026-07-23 02:10:26,916 INFO {"req_id": "41164335", "event": "http_request", "method": "GET", "path": "/api/menu/categories", "query": {}, "request_json": null}
+2026-07-23 02:10:26,917 INFO {"req_id": "c00faae4", "event": "http_request", "method": "GET", "path": "/icons/biryani.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,940 INFO {"req_id": "2338cca3", "event": "http_request", "method": "GET", "path": "/icons/snacks.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,944 INFO {"req_id": "53857a19", "event": "http_request", "method": "GET", "path": "/icons/chinese.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,961 INFO {"req_id": "6f2a71c3", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:10:26,963 INFO {"req_id": "409b3c51", "event": "http_request", "method": "POST", "path": "/api/auth/refresh", "query": {}, "request_json": {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJqdGkiOiJYYWxOSzZ1NmwzeGRSOThNWmtzcnFYV0ExdVZfblRYXzM4eGJOaGxLTFhFIiwidmVyIjoyLCJ0eXBlIjoicmVmcmVzaCIsImlzcyI6Im9uZm9vZCIsImV4cCI6MTc4NzM0Mzc5MH0.QaZrvpqbEEEBrRusFpKb5YlosLEaFvJpk_Hnf6IJZXM"}}
+2026-07-23 02:10:26,970 INFO {"req_id": "6cbb2f8f", "event": "http_request", "method": "GET", "path": "/icons/beverages.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,975 INFO {"req_id": "958c9923", "event": "http_request", "method": "GET", "path": "/icons/desserts.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,992 INFO {"req_id": "32042bea", "event": "http_request", "method": "GET", "path": "/icons/starters.png", "query": {}, "request_json": null}
+2026-07-23 02:10:26,994 INFO {"req_id": "b857aabe", "event": "http_request", "method": "GET", "path": "/icons/tandoori.png", "query": {}, "request_json": null}
+2026-07-23 02:10:27,059 INFO {"req_id": "e5d9cde7", "event": "http_request", "method": "POST", "path": "/api/auth/refresh", "query": {}, "request_json": {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJqdGkiOiJYYWxOSzZ1NmwzeGRSOThNWmtzcnFYV0ExdVZfblRYXzM4eGJOaGxLTFhFIiwidmVyIjoyLCJ0eXBlIjoicmVmcmVzaCIsImlzcyI6Im9uZm9vZCIsImV4cCI6MTc4NzM0Mzc5MH0.QaZrvpqbEEEBrRusFpKb5YlosLEaFvJpk_Hnf6IJZXM"}}
+2026-07-23 02:10:27,064 INFO {"req_id": "5ef2709d", "event": "http_request", "method": "GET", "path": "/api/banners", "query": {}, "request_json": null}
+2026-07-23 02:10:27,065 INFO {"req_id": "0103c3b8", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 02:10:27,083 INFO {"req_id": "2da5a224", "event": "http_request", "method": "GET", "path": "/images/butter-chicken.png", "query": {}, "request_json": null}
+2026-07-23 02:10:27,130 INFO {"req_id": "647f6032", "event": "http_request", "method": "GET", "path": "/images/chicken-biryani.png", "query": {}, "request_json": null}
+2026-07-23 02:10:27,172 INFO {"req_id": "8f957fda", "event": "http_request", "method": "GET", "path": "/images/garlic-naan.png", "query": {}, "request_json": null}
+2026-07-23 02:10:27,231 INFO {"req_id": "748f0475", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:10:27,278 INFO {"req_id": "6c691d55", "event": "http_request", "method": "GET", "path": "/images/Veg Dum Biryani.png", "query": {}, "request_json": null}
+2026-07-23 02:10:27,312 INFO {"req_id": "38b8eb5c", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:10:27,366 INFO {"req_id": "d2667b99", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:10:27,430 INFO {"req_id": "fc64e625", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTM3Mjd9.dPLjZwqfnS-jbgq1V0yDcxrEYoccMi9pDMnPg-lb6AI"}, "request_json": null}
+2026-07-23 02:10:37,345 INFO {"req_id": "7f2af602", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:10:37,349 INFO {"req_id": "2aea9393", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:10:43,134 INFO {"req_id": "e691753f", "event": "http_request", "method": "GET", "path": "/api/locations/colleges/91c10188-3c58-4f9d-b15a-bca17ccf7f48/canteens", "query": {}, "request_json": null}
+2026-07-23 02:10:59,851 INFO {"req_id": "ea3d1f31", "event": "http_request", "method": "POST", "path": "/api/orders/stream/ticket", "query": {}, "request_json": null}
+2026-07-23 02:10:59,869 INFO {"req_id": "3b6ae8de", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"ticket": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNzZiOWZhYS1hYmM2LTQ5MzItYmFhNC01MjRiYTM2NjNjOTIiLCJyb2xlIjoiY3VzdG9tZXIiLCJ2ZXIiOjEsInR5cGUiOiJhY2Nlc3MiLCJpc3MiOiJvbmZvb2QiLCJleHAiOjE3ODQ3NTM3NTl9.XHa8vap98wXznJskKcP9sDXU5Zy0FumEetAVVQQkxMo"}, "request_json": null}
+2026-07-23 02:11:01,813 INFO {"req_id": "12a70fd0", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "20"}, "request_json": null}
+2026-07-23 02:11:03,127 INFO {"req_id": "68a8d886", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:11:03,132 INFO {"req_id": "c3b75929", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:11:13,045 INFO {"req_id": "86939f46", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:11:13,052 INFO {"req_id": "c4586c3d", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:11:23,044 INFO {"req_id": "3e524adb", "event": "http_request", "method": "GET", "path": "/api/kitchen/status", "query": {}, "request_json": null}
+2026-07-23 02:11:23,050 INFO {"req_id": "a68f9b9c", "event": "http_request", "method": "GET", "path": "/api/orders/history", "query": {"page": "1", "limit": "15"}, "request_json": null}
+2026-07-23 02:11:30,322 INFO {"req_id": "96dd23e5", "event": "http_request", "method": "GET", "path": "/api/locations/colleges/91c10188-3c58-4f9d-b15a-bca17ccf7f48/canteens", "query": {}, "request_json": null}
+2026-07-23 02:19:46,754 INFO {"event": "server_start", "service": "onfood-backend", "version": "2.0.0"}
+2026-07-23 02:19:47,117 INFO {"req_id": "463d6102", "event": "http_request", "method": "GET", "path": "/api/orders/stream/f76b9faa-abc6-4932-baa4-524ba3663c92", "query": {"token": "[REDACTED]"}, "request_json": null}

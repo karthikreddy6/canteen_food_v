@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.exceptions import BadRequestException
-from app.models import Campus, College, Canteen
+from app.models import College, Canteen
 from app.security import get_client_ip
 from app.security_rules import rate_limit_college_suggest
 
@@ -33,16 +33,6 @@ class SuggestCollegeRequest(BaseModel):
 
     class Config:
         populate_by_name = True
-
-
-async def _get_default_campus(db: AsyncSession) -> Campus:
-    campus = (await db.execute(select(Campus).where(Campus.name == "Main Campus"))).scalar_one_or_none()
-    if campus:
-        return campus
-    campus = Campus(name="Main Campus")
-    db.add(campus)
-    await db.flush()
-    return campus
 
 
 # ─── GET Endpoints ──────────────────────────────────────────
@@ -114,10 +104,8 @@ async def suggest_college(request: SuggestCollegeRequest, http_request: Request,
         }
 
     # Create new college as INACTIVE — admin must approve before it becomes searchable
-    campus = await _get_default_campus(db)
     new_college = College(
         name=request.name.strip(),
-        campus_id=campus.id,
         is_active=False  # Pending admin approval
     )
     db.add(new_college)

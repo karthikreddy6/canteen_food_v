@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -325,11 +325,11 @@ async def create_order(
         if request.scheduled_date < today:
             raise BadRequestException("Cannot schedule an order in the past.")
 
-        # If date is today, verify start_time is in the future
+        # If date is today, verify start_time is at least 1 hour in the future
         if request.scheduled_date == today:
-            now_time = datetime.now().time()
-            if slot.start_time <= now_time:
-                raise BadRequestException("Cannot schedule an order for a past time slot today.")
+            lead_time_cutoff = (datetime.now() + timedelta(hours=1)).time()
+            if slot.start_time < lead_time_cutoff:
+                raise BadRequestException("Scheduled orders must be placed at least 1 hour in advance.")
 
         # Count existing orders booked for this slot on this date
         from sqlalchemy import func
@@ -672,6 +672,13 @@ async def get_schedule_slots(
             cid = user.preferred_canteen_id
 
     # ── Fetch active slots for the canteen (+ global fallback) ──
+    if cid:
+        canteen_check = (await db.execute(
+            select(Canteen).where(Canteen.id == cid, Canteen.is_active == True)
+        )).scalar_one_or_none()
+        if not canteen_check:
+            return []  # Inactive canteen -> return no time slots
+
     slot_filter = [TimeSlot.is_active == True]
     if cid:
         slot_filter.append(
@@ -692,25 +699,33 @@ async def get_schedule_slots(
     bookings_map = {row[0]: row[1] for row in bookings_res.fetchall()}
 
     today = date.today()
-    now_time = datetime.now().time()
+    lead_time_cutoff = (datetime.now() + timedelta(hours=1)).time()
 
     responses = []
     for slot in slots:
         booked = bookings_map.get(slot.id, 0)
         remaining = max(0, slot.max_orders - booked)
 
-        is_past = (date == today and slot.start_time <= now_time)
+        # Require at least 1 hour lead time for today's orders
+        is_too_soon = (date == today and slot.start_time < lead_time_cutoff)
+
+        # Format user-friendly label if null or empty (e.g. "08:00 AM - 08:30 AM")
+        display_label = slot.label
+        if not display_label or not display_label.strip():
+            start_str = datetime.combine(date.today(), slot.start_time).strftime("%I:%M %p")
+            end_str = datetime.combine(date.today(), slot.end_time).strftime("%I:%M %p")
+            display_label = f"{start_str} - {end_str}"
 
         responses.append(TimeSlotResponse(
             id=slot.id,
             canteen_id=slot.canteen_id,
-            label=slot.label,
+            label=display_label,
             start_time=slot.start_time,
             end_time=slot.end_time,
             max_orders=slot.max_orders,
             orders_booked=booked,
             orders_remaining=remaining,
-            is_available=remaining > 0 and not is_past
+            is_available=remaining > 0 and not is_too_soon
         ))
 
     return responses

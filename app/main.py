@@ -15,9 +15,9 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.database import AsyncSessionLocal
 from app.exceptions import register_exception_handlers
-from app.models import User, MenuItem, Category, KitchenSettings, FaqCategory, FaqItem, TimeSlot, VendorAccount, College, Canteen, Banner, Campus, college_canteens
+from app.models import User, MenuItem, Category, KitchenSettings, FaqCategory, FaqItem, TimeSlot, VendorAccount, College, Canteen, Banner, college_canteens
 from app.security import hash_password, require_app_client
-from app.routers import menu, orders, auth, cart, kitchen, help as help_router, vendor, vendor_auth, promotions, locations
+from app.routers import menu, orders, auth, cart, kitchen, help as help_router, promotions, locations
 from app.config import settings as app_config
 
 
@@ -290,10 +290,6 @@ app.include_router(cart.router)
 app.include_router(orders.router)
 app.include_router(kitchen.router)
 app.include_router(help_router.router)
-# Vendor endpoints temporarily disabled.
-# Re-enable these two routers when vendor access is needed again.
-# app.include_router(vendor_auth.router)
-# app.include_router(vendor.router)
 app.include_router(promotions.router)
 app.include_router(locations.router)
 app.mount("/icons", StaticFiles(directory="app/static/icons"), name="icons")
@@ -436,30 +432,20 @@ async def seed_database():
             ("Science College", "Science Fuel Specials", "/images/banner1.png"),
         ]
 
-        campus = (await db.execute(select(Campus).where(Campus.name == "Main Campus"))).scalar_one_or_none()
-        if not campus:
-            campus = Campus(name="Main Campus")
-            db.add(campus)
-            await db.flush()
-
         existing_colleges = {row.name: row for row in (await db.execute(select(College))).scalars().all()}
         existing_canteens = {row.name: row for row in (await db.execute(select(Canteen))).scalars().all()}
         colleges = {}
         canteens = {}
 
         for college_name in college_to_canteens:
-            colleges[college_name] = existing_colleges.get(college_name) or College(name=college_name, campus_id=campus.id)
+            colleges[college_name] = existing_colleges.get(college_name) or College(name=college_name)
             if colleges[college_name].id is None:
                 db.add(colleges[college_name])
-            else:
-                colleges[college_name].campus_id = campus.id
 
         for canteen_name in {name for names in college_to_canteens.values() for name in names}:
-            canteens[canteen_name] = existing_canteens.get(canteen_name) or Canteen(name=canteen_name, campus_id=campus.id)
+            canteens[canteen_name] = existing_canteens.get(canteen_name) or Canteen(name=canteen_name)
             if canteens[canteen_name].id is None:
                 db.add(canteens[canteen_name])
-            else:
-                canteens[canteen_name].campus_id = campus.id
 
         await db.flush()
 
@@ -502,7 +488,6 @@ async def seed_database():
                 email="karthik@example.com",
                 phone="9876543210",
                 phone_verified=True,
-                campus_id=campus.id,
                 college="Engineering College",
                 college_id=colleges["Engineering College"].id,
                 preferred_canteen_id=canteens["Central Canteen"].id,
@@ -574,7 +559,6 @@ async def seed_database():
                 db.add(Banner(
                     title=title,
                     image_url=image_url,
-                    campus_id=campus.id,
                     college_id=colleges[college_name].id,
                     is_active=True,
                     display_order=display_order,
@@ -609,56 +593,21 @@ async def seed_database():
             import datetime
             slots_to_add = []
             
-            # Custom Time Slots per Canteen
-            central_id = canteens["Central Canteen"].id if "Central Canteen" in canteens else None
-            hostel_id = canteens["Hostel Canteen"].id if "Hostel Canteen" in canteens else None
-            mba_id = canteens["MBA Canteen"].id if "MBA Canteen" in canteens else None
-            express_id = canteens["Food Court Express"].id if "Food Court Express" in canteens else None
-            arts_id = canteens["Arts Canteen"].id if "Arts Canteen" in canteens else None
-            science_id = canteens["Science Canteen"].id if "Science Canteen" in canteens else None
-
-            custom_canteen_slots = [
-                # Central Canteen Custom Slots
-                (central_id, "Breakfast", datetime.time(8, 0), datetime.time(10, 30), 20),
-                (central_id, "Lunch", datetime.time(12, 0), datetime.time(15, 0), 50),
-                (central_id, "Evening Snacks", datetime.time(16, 0), datetime.time(18, 30), 30),
-                (central_id, "Dinner", datetime.time(19, 30), datetime.time(21, 30), 40),
-
-                # Hostel Canteen Custom Slots
-                (hostel_id, "Morning Tiffin", datetime.time(7, 30), datetime.time(10, 0), 25),
-                (hostel_id, "Lunch Break", datetime.time(12, 30), datetime.time(14, 30), 45),
-                (hostel_id, "Tea & Snacks", datetime.time(16, 30), datetime.time(18, 0), 25),
-                (hostel_id, "Night Mess", datetime.time(20, 0), datetime.time(22, 0), 50),
-
-                # MBA Canteen Custom Slots
-                (mba_id, "Morning Coffee & Breakfast", datetime.time(8, 30), datetime.time(11, 0), 15),
-                (mba_id, "Executive Lunch", datetime.time(12, 0), datetime.time(14, 30), 30),
-                (mba_id, "Evening Refreshments", datetime.time(15, 30), datetime.time(18, 0), 20),
-
-                # Food Court Express Custom Slots
-                (express_id, "All-Day Fast Track", datetime.time(9, 0), datetime.time(21, 0), 100),
-
-                # Arts Canteen Custom Slots
-                (arts_id, "Morning Special", datetime.time(8, 30), datetime.time(11, 0), 20),
-                (arts_id, "Afternoon Thali", datetime.time(12, 0), datetime.time(15, 0), 35),
-                (arts_id, "Chai & Chat", datetime.time(16, 0), datetime.time(19, 0), 30),
-
-                # Science Canteen Custom Slots
-                (science_id, "Lab Quick Snack", datetime.time(9, 0), datetime.time(11, 30), 25),
-                (science_id, "Science Lunch Hour", datetime.time(12, 30), datetime.time(14, 30), 40),
-                (science_id, "Evening Energy Refill", datetime.time(16, 0), datetime.time(18, 30), 25),
-            ]
-
-            for cid, label, start, end, max_ord in custom_canteen_slots:
-                if cid:
+            # Generate continuous 30-minute time slots (08:00 to 21:30) for each canteen
+            for canteen_obj in canteens.values():
+                curr = datetime.datetime.combine(datetime.date.today(), datetime.time(8, 0))
+                limit = datetime.datetime.combine(datetime.date.today(), datetime.time(21, 30))
+                while curr < limit:
+                    nxt = curr + datetime.timedelta(minutes=30)
                     slots_to_add.append(TimeSlot(
-                        canteen_id=cid,
-                        label=label,
-                        start_time=start,
-                        end_time=end,
-                        max_orders=max_ord,
+                        canteen_id=canteen_obj.id,
+                        label=None,
+                        start_time=curr.time(),
+                        end_time=nxt.time(),
+                        max_orders=5,
                         is_active=True
                     ))
+                    curr = nxt
             
             db.add_all(slots_to_add)
 

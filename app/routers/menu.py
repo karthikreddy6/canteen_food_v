@@ -7,7 +7,7 @@ from uuid import UUID
 
 from app.database import get_db
 from app.config import settings
-from app.models import MenuItem, Category, User
+from app.models import MenuItem, Category, User, Canteen
 from app.schemas import (
     CategoryResponse,
     MenuItemResponse,
@@ -47,21 +47,26 @@ async def _all_cached_menu(db: AsyncSession, canteen_id: Optional[UUID] = None) 
     cached_items = await get_json(cache_key)
     if cached_items is not None:
         return _dedupe_menu_items(_menu_from_json(cached_items))
+    
+    stmt = select(MenuItem).join(MenuItem.canteen).where(
+        MenuItem.is_available == True,
+        Canteen.is_active == True
+    )
     if canteen_id:
-        result = await db.execute(select(MenuItem).where(
-            MenuItem.is_available == True, MenuItem.canteen_id == canteen_id
-        ).order_by(MenuItem.name))
-    else:
-        result = await db.execute(
-            select(MenuItem).where(MenuItem.is_available == True).order_by(MenuItem.name)
-        )
+        stmt = stmt.where(MenuItem.canteen_id == canteen_id)
+    stmt = stmt.order_by(MenuItem.name)
+    
+    result = await db.execute(stmt)
     items = _dedupe_menu_items([_to_menu_response(i) for i in result.scalars().all()])
     await set_json(cache_key, [item.model_dump(mode="json") for item in items], settings.MENU_CACHE_TTL_SECONDS)
     return items
 
 
 async def _category_item_counts(db: AsyncSession, canteen_id: Optional[UUID] = None) -> dict:
-    stmt = select(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name).where(MenuItem.is_available == True)
+    stmt = select(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name).join(MenuItem.canteen).where(
+        MenuItem.is_available == True,
+        Canteen.is_active == True
+    )
     if canteen_id:
         stmt = stmt.where(MenuItem.canteen_id == canteen_id)
     result = await db.execute(stmt.order_by(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name))
