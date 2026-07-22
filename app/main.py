@@ -1,10 +1,12 @@
+import logging
+import logging.handlers
+import os
+import time
+import uuid
 from contextlib import asynccontextmanager
 from decimal import Decimal
 import json
-import logging
-import time
-import uuid
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -14,21 +16,47 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.database import AsyncSessionLocal
 from app.exceptions import register_exception_handlers
 from app.models import User, MenuItem, Category, KitchenSettings, FaqCategory, FaqItem, TimeSlot, VendorAccount, College, Canteen, Banner, Campus, college_canteens
-from app.security import hash_password
+from app.security import hash_password, require_app_client
 from app.routers import menu, orders, auth, cart, kitchen, help as help_router, vendor, vendor_auth, promotions, locations
+from app.config import settings as app_config
 
+
+# ─── Logging setup ────────────────────────────────────────────
+# Write logs to a dedicated subdirectory with automatic rotation.
+_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
+os.makedirs(_LOG_DIR, exist_ok=True)
 
 request_logger = logging.getLogger("onfood.request")
 response_logger = logging.getLogger("onfood.response")
-_SENSITIVE_KEYS = {"password", "otp", "token", "access_token", "authorization", "hashed_password"}
 
-for logger, filename in ((request_logger, "request.log"), (response_logger, "response.log")):
-    if not logger.handlers:
-        file_handler = logging.FileHandler(filename, encoding="utf-8")
-        file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-        logger.addHandler(file_handler)
-    logger.setLevel(logging.INFO)
-    logger.propagate = False
+# Redact these key names wherever they appear in logged request/response bodies
+# or query parameters so tokens and credentials never reach log files.
+_SENSITIVE_KEYS = {"password", "otp", "token", "access_token", "authorization", "hashed_password"}
+# Query parameter names whose values should be redacted (e.g. ?token=<JWT> for SSE clients)
+_SENSITIVE_QUERY_PARAMS = {"token", "access_token"}
+
+for _logger, _filename in ((request_logger, "request.log"), (response_logger, "response.log")):
+    if not _logger.handlers:
+        _handler = logging.handlers.RotatingFileHandler(
+            os.path.join(_LOG_DIR, _filename),
+            maxBytes=10_000_000,   # 10 MB per file
+            backupCount=5,
+            encoding="utf-8",
+        )
+        _handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+        _logger.addHandler(_handler)
+    _logger.setLevel(logging.INFO)
+    _logger.propagate = False
+
+# Exception logger (unhandled 500s) also goes to logs/
+_exc_handler = logging.handlers.RotatingFileHandler(
+    os.path.join(_LOG_DIR, "errors.log"),
+    maxBytes=10_000_000,
+    backupCount=5,
+    encoding="utf-8",
+)
+_exc_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logging.getLogger("onfood.exceptions").addHandler(_exc_handler)
 
 
 def _safe_log_data(value):
@@ -90,15 +118,19 @@ app = FastAPI(
     title="OnFood Backend Server",
     description="Complete Python FastAPI backend for OnFood Android food ordering app.",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    dependencies=[Depends(require_app_client)]
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # Use explicit origins from config in production.
+    # When origins remain ["*"] (dev default), credentials must be disabled
+    # because browsers reject wildcard + credentials per the CORS spec.
+    allow_origins=app_config.CORS_ALLOWED_ORIGINS,
+    allow_credentials=app_config.CORS_ALLOWED_ORIGINS != ["*"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Request-Id", app_config.APP_CLIENT_KEY_HEADER],
 )
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
@@ -165,11 +197,16 @@ async def dev_request_logger(request: Request, call_next):
             except Exception:
                 pass
 
-        qs = f"?{request.url.query}" if request.url.query else ""
+        # Scrub sensitive values from query params before logging
+        safe_qs = {
+            k: ("[REDACTED]" if k.lower() in _SENSITIVE_QUERY_PARAMS else v)
+            for k, v in request.query_params.items()
+        }
+        qs_str = ("?" + "&".join(f"{k}={v}" for k, v in safe_qs.items())) if safe_qs else ""
         print(
             f"  {_C['grey']}>> [{req_id}]{_C['reset']} "
             f"{_method_color(request.method)}{_C['bold']}{request.method}{_C['reset']} "
-            f"{_C['blue']}{path}{qs}{_C['reset']}"
+            f"{_C['blue']}{path}{qs_str}{_C['reset']}"
             f"{body_preview}"
         )
 
@@ -178,26 +215,24 @@ async def dev_request_logger(request: Request, call_next):
 
     duration_ms = round((time.perf_counter() - started) * 1000, 2)
 
-    # Capture response body for JSON logging
+    # Capture response body for JSON logging if available without consuming stream
     response_body = getattr(response, "body", None)
-    if response_body is None and response.headers.get("content-type", "").startswith("application/json"):
-        chunks = []
-        async for chunk in response.body_iterator:
-            chunks.append(chunk)
-        response_body = b"".join(chunks)
-
-        async def restored_body():
-            yield response_body
-
-        response.body_iterator = restored_body()
 
     # Attach request-id to response so Android can trace it
     response.headers["X-Request-Id"] = req_id
 
+    # ── Security headers ─────────────────────────────────────────────────────
+    # Emitted on every response regardless of environment.
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    # HSTS only makes sense when serving over HTTPS (i.e. production behind ngrok/Nginx)
+    if app_config.ENVIRONMENT == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
     # ── Outgoing response (dev console) ──
     if not skip:
         sc = response.status_code
-        slow_warn = f" {_C['yellow']}⚠ SLOW{_C['reset']}" if duration_ms > 500 else ""
+        slow_warn = f" {_C['yellow']}SLOW{_C['reset']}" if duration_ms > 500 else ""
         resp_preview = ""
         if response_body:
             try:
@@ -217,16 +252,25 @@ async def dev_request_logger(request: Request, call_next):
             f"{resp_preview}"
         )
 
-    # ── File logger (always) ──
-    response_data = _json_body(response_body) if response_body is not None else None
+    # ── File logger ──────────────────────────────────────────────────────────
+    # In production, suppress full request/response bodies to avoid logging
+    # sensitive order data, user details, etc. Log only routing metadata.
+    is_production = app_config.ENVIRONMENT == "production"
+
+    # Scrub query params for the file log too (SSE ?token= must not appear)
+    safe_query = {
+        k: ("[REDACTED]" if k.lower() in _SENSITIVE_QUERY_PARAMS else v)
+        for k, v in request.query_params.items()
+    }
     request_logger.info(json.dumps({
         "req_id": req_id,
         "event": "http_request",
         "method": request.method,
         "path": path,
-        "query": dict(request.query_params),
-        "request_json": _json_body(request_body),
+        "query": safe_query,
+        "request_json": None if is_production else _json_body(request_body),
     }, ensure_ascii=False, default=str))
+    response_data = _json_body(response_body) if response_body is not None else None
     response_logger.info(json.dumps({
         "req_id": req_id,
         "event": "http_response",
@@ -234,7 +278,7 @@ async def dev_request_logger(request: Request, call_next):
         "path": path,
         "status": response.status_code,
         "duration_ms": duration_ms,
-        "response_json": response_data,
+        "response_json": None if is_production else response_data,
     }, ensure_ascii=False, default=str))
 
     return response
@@ -266,13 +310,49 @@ async def health_check():
 
 from fastapi import WebSocket, WebSocketDisconnect
 from app.websocket import ws_manager
+import jwt as _pyjwt
 
 @app.websocket("/ws/orders/{userId}")
 async def websocket_orders_endpoint(websocket: WebSocket, userId: str):
+    """
+    Authenticated real-time order status stream over WebSocket.
+
+    Auth: Pass JWT in the `Authorization` header or as the `token` query param.
+    The token subject (sub) must match the userId path parameter.
+    Unauthenticated or mismatched connections are closed with code 4001.
+    """
+    from app.security import _decode_token, UnauthenticatedException
+
+    # 1. Extract raw token — WebSocket clients can't always set headers, so we
+    #    also accept ?token=<jwt> as a fallback (same pattern as SSE).
+    raw_token: str | None = None
+    auth_header = websocket.headers.get("authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        raw_token = auth_header[7:].strip()
+    if not raw_token:
+        raw_token = websocket.query_params.get("token")
+
+    if not raw_token:
+        await websocket.close(code=4001, reason="Authentication required")
+        return
+
+    # 2. Validate JWT and enforce userId ownership.
+    try:
+        payload = _decode_token(raw_token)
+        token_user_id = str(payload.get("sub", ""))
+    except UnauthenticatedException as exc:
+        await websocket.close(code=4001, reason=exc.message)
+        return
+
+    if token_user_id != userId:
+        await websocket.close(code=4003, reason="User ID does not match token")
+        return
+
+    # 3. Auth passed — accept and maintain connection.
     await ws_manager.connect(userId, websocket)
     try:
         while True:
-            # Keep connection alive
+            # Keep connection alive; client messages are not processed.
             await websocket.receive_text()
     except WebSocketDisconnect:
         ws_manager.disconnect(userId, websocket)
@@ -524,24 +604,61 @@ async def seed_database():
 
         # ── Time Slots ──
         slots_result = await db.execute(select(TimeSlot))
-        if not slots_result.scalars().all():
+        existing_slots = slots_result.scalars().all()
+        if not existing_slots:
             import datetime
-            # Seed 30-minute intervals from 09:00 to 21:00 (i.e. last slot is 20:30 - 21:00)
-            start_hour = 9
-            end_hour = 21
             slots_to_add = []
-            current_time = datetime.datetime.combine(datetime.date.today(), datetime.time(start_hour, 0))
-            end_time_limit = datetime.datetime.combine(datetime.date.today(), datetime.time(end_hour, 0))
             
-            while current_time < end_time_limit:
-                next_time = current_time + datetime.timedelta(minutes=30)
-                slots_to_add.append(TimeSlot(
-                    start_time=current_time.time(),
-                    end_time=next_time.time(),
-                    max_orders=5,
-                    is_active=True
-                ))
-                current_time = next_time
+            # Custom Time Slots per Canteen
+            central_id = canteens["Central Canteen"].id if "Central Canteen" in canteens else None
+            hostel_id = canteens["Hostel Canteen"].id if "Hostel Canteen" in canteens else None
+            mba_id = canteens["MBA Canteen"].id if "MBA Canteen" in canteens else None
+            express_id = canteens["Food Court Express"].id if "Food Court Express" in canteens else None
+            arts_id = canteens["Arts Canteen"].id if "Arts Canteen" in canteens else None
+            science_id = canteens["Science Canteen"].id if "Science Canteen" in canteens else None
+
+            custom_canteen_slots = [
+                # Central Canteen Custom Slots
+                (central_id, "Breakfast", datetime.time(8, 0), datetime.time(10, 30), 20),
+                (central_id, "Lunch", datetime.time(12, 0), datetime.time(15, 0), 50),
+                (central_id, "Evening Snacks", datetime.time(16, 0), datetime.time(18, 30), 30),
+                (central_id, "Dinner", datetime.time(19, 30), datetime.time(21, 30), 40),
+
+                # Hostel Canteen Custom Slots
+                (hostel_id, "Morning Tiffin", datetime.time(7, 30), datetime.time(10, 0), 25),
+                (hostel_id, "Lunch Break", datetime.time(12, 30), datetime.time(14, 30), 45),
+                (hostel_id, "Tea & Snacks", datetime.time(16, 30), datetime.time(18, 0), 25),
+                (hostel_id, "Night Mess", datetime.time(20, 0), datetime.time(22, 0), 50),
+
+                # MBA Canteen Custom Slots
+                (mba_id, "Morning Coffee & Breakfast", datetime.time(8, 30), datetime.time(11, 0), 15),
+                (mba_id, "Executive Lunch", datetime.time(12, 0), datetime.time(14, 30), 30),
+                (mba_id, "Evening Refreshments", datetime.time(15, 30), datetime.time(18, 0), 20),
+
+                # Food Court Express Custom Slots
+                (express_id, "All-Day Fast Track", datetime.time(9, 0), datetime.time(21, 0), 100),
+
+                # Arts Canteen Custom Slots
+                (arts_id, "Morning Special", datetime.time(8, 30), datetime.time(11, 0), 20),
+                (arts_id, "Afternoon Thali", datetime.time(12, 0), datetime.time(15, 0), 35),
+                (arts_id, "Chai & Chat", datetime.time(16, 0), datetime.time(19, 0), 30),
+
+                # Science Canteen Custom Slots
+                (science_id, "Lab Quick Snack", datetime.time(9, 0), datetime.time(11, 30), 25),
+                (science_id, "Science Lunch Hour", datetime.time(12, 30), datetime.time(14, 30), 40),
+                (science_id, "Evening Energy Refill", datetime.time(16, 0), datetime.time(18, 30), 25),
+            ]
+
+            for cid, label, start, end, max_ord in custom_canteen_slots:
+                if cid:
+                    slots_to_add.append(TimeSlot(
+                        canteen_id=cid,
+                        label=label,
+                        start_time=start,
+                        end_time=end,
+                        max_orders=max_ord,
+                        is_active=True
+                    ))
             
             db.add_all(slots_to_add)
 

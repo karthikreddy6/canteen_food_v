@@ -1,0 +1,149 @@
+2026-07-21 18:49:49,801 ERROR Unhandled exception [req_id=98c27508] GET / — NameError("name 'response_data' is not defined")
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 289, in dev_request_logger
+    "response_json": None if is_production else (response_data),
+                                                 ^^^^^^^^^^^^^
+NameError: name 'response_data' is not defined. Did you mean: 'response_body'?
+
+2026-07-21 18:49:50,108 ERROR Unhandled exception [req_id=84377daf] GET /favicon.ico — NameError("name 'response_data' is not defined")
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 289, in dev_request_logger
+    "response_json": None if is_production else (response_data),
+                                                 ^^^^^^^^^^^^^
+NameError: name 'response_data' is not defined. Did you mean: 'response_body'?
+
+2026-07-21 18:54:55,970 ERROR Unhandled exception [req_id=dd8ddeb0] GET /favicon.ico — NameError("name 'response_data' is not defined")
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 289, in dev_request_logger
+    "response_json": None if is_production else (response_data),
+                                                 ^^^^^^^^^^^^^
+NameError: name 'response_data' is not defined. Did you mean: 'response_body'?
+
+2026-07-21 18:57:59,167 ERROR Unhandled exception [req_id=b08a6b38] POST /api/auth/login — NameError("name 'response_data' is not defined")
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 289, in dev_request_logger
+    "response_json": None if is_production else (response_data),
+                                                 ^^^^^^^^^^^^^
+NameError: name 'response_data' is not defined. Did you mean: 'response_body'?
+
+2026-07-21 18:58:26,993 ERROR Unhandled exception [req_id=67534315] POST /api/auth/login — NameError("name 'response_data' is not defined")
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 289, in dev_request_logger
+    "response_json": None if is_production else (response_data),
+                                                 ^^^^^^^^^^^^^
+NameError: name 'response_data' is not defined. Did you mean: 'response_body'?
+
+2026-07-22 00:03:46,374 ERROR Unhandled exception [req_id=d0cdc459] POST /api/orders — AttributeError("'CreateOrderRequest' object has no attribute 'user_id'")
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 214, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\orders.py", line 152, in create_order
+    if request.user_id is not None and request.user_id != current_user_id:
+       ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\pydantic\main.py", line 1042, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'CreateOrderRequest' object has no attribute 'user_id'
+
+2026-07-22 00:32:23,673 ERROR Unhandled exception [req_id=015386e2] POST /api/auth/login — UnicodeEncodeError('charmap', '  \x1b[90m<< [015386e2]\x1b[0m \x1b[92m\x1b[1m200\x1b[0m \x1b[90m627.95ms\x1b[0m \x1b[93m⚠ SLOW\x1b[0m', 65, 66, 'character maps to <undefined>')
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 257, in dev_request_logger
+    print(
+    ~~~~~^
+        f"  {_C['grey']}<< [{req_id}]{_C['reset']} "
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        f"{resp_preview}"
+        ^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u26a0' in position 65: character maps to <undefined>
+

@@ -16,9 +16,10 @@ from app.models import Canteen, User, MenuItem, Order, OrderItem, OrderStatus, C
 from app.config import settings as app_settings
 from app.schemas import (
     CreateOrderRequest, OrderResponse, OrderItemResponse,
-    UpdateOrderStatusRequest, OrderHistoryResponse, TimeSlotResponse
+    UpdateOrderStatusRequest, OrderHistoryResponse, TimeSlotResponse,
+    StreamTicketResponse,
 )
-from app.security import get_current_user_id
+from app.security import get_current_user_id, get_current_user_id_verified, get_current_user_id_optional
 from app.exceptions import NotFoundException, BadRequestException
 from app.sse import sse_manager
 from app.services.eta import get_kitchen_settings, count_active_orders
@@ -136,7 +137,7 @@ async def _auto_progress_order(order_id: str):
 async def create_order(
     request: CreateOrderRequest,
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user_id)
+    current_user_id: str = Depends(get_current_user_id_verified)
 ):
     """
     Place a new order.
@@ -148,16 +149,16 @@ async def create_order(
     - Assigns daily pickup number and ETA.
     - Starts background task to auto-progress status.
     """
-    if request.user_id != current_user_id:
-        raise BadRequestException("User ID mismatch with authenticated token")
+    # user_id comes exclusively from the JWT — never from the request body
+    user_id = current_user_id
 
     # 1. Verify user exists
     user_result = await db.execute(
-        select(User).where(User.id == request.user_id).with_for_update()
+        select(User).where(User.id == user_id).with_for_update()
     )
     user = user_result.scalars().first()
     if not user:
-        raise NotFoundException(f"User not found: {request.user_id}")
+        raise NotFoundException(f"User not found: {user_id}")
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     if user.last_order_at:
@@ -182,7 +183,7 @@ async def create_order(
         item_requests = request.items
     else:
         cart_result = await db.execute(
-            select(CartItem).where(CartItem.user_id == request.user_id)
+            select(CartItem).where(CartItem.user_id == user_id)
         )
         cart_items = cart_result.scalars().all()
         if not cart_items:
@@ -266,7 +267,7 @@ async def create_order(
             usage_count_res = await db.execute(
                 select(sqlfunc.count(CouponUsage.id)).where(
                     CouponUsage.coupon_id == coupon.id,
-                    CouponUsage.user_id == request.user_id
+                    CouponUsage.user_id == user_id
                 )
             )
             user_usage_count = usage_count_res.scalar() or 0
@@ -359,7 +360,7 @@ async def create_order(
 
     # 9. Create Order
     new_order = Order(
-        user_id=request.user_id,
+        user_id=user_id,
         canteen_id=order_canteen_id,
         user_roll_number=user.roll_number,
         total_amount=final_total,
@@ -381,13 +382,13 @@ async def create_order(
     if coupon:
         coupon.used_count += 1
         from app.models import CouponUsage
-        db.add(CouponUsage(coupon_id=coupon.id, user_id=request.user_id))
+        db.add(CouponUsage(coupon_id=coupon.id, user_id=user_id))
     db.add(new_order)
     await db.flush()
 
     # 10. Auto-clear cart
     cart_result2 = await db.execute(
-        select(CartItem).where(CartItem.user_id == request.user_id)
+        select(CartItem).where(CartItem.user_id == user_id)
     )
     for ci in cart_result2.scalars().all():
         await db.delete(ci)
@@ -435,7 +436,7 @@ async def get_order_history(
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user_id)
+    current_user_id: str = Depends(get_current_user_id_verified)
 ):
     """Paginated order history for the logged-in user, newest first."""
     from sqlalchemy import func
@@ -469,7 +470,7 @@ async def get_order_history(
 async def get_order(
     orderId: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user_id)
+    current_user_id: str = Depends(get_current_user_id_verified)
 ):
     """Retrieve a specific order by ID."""
     order = await _load_order_for_response(db, orderId)
@@ -485,12 +486,18 @@ async def update_order_status(
     orderId: UUID,
     request: UpdateOrderStatusRequest,
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user_id)
+    current_user_id: str = Depends(get_current_user_id_verified)
 ):
-    """Update order status. When DELIVERED, records actual_ready_at."""
+    """Update order status. Only the order's owner (customer) may call this endpoint."""
     order = await _load_order_for_response(db, orderId)
     if not order:
         raise NotFoundException(f"Order not found: {orderId}")
+
+    # Ownership enforcement: only the customer who placed this order may update its status.
+    # Vendor-initiated status changes will use dedicated vendor endpoints in the future.
+    if order.user_id != current_user_id:
+        from app.exceptions import BadRequestException
+        raise BadRequestException("You are not authorised to update this order")
 
     order.status = request.status
     if request.status == OrderStatus.DELIVERED:
@@ -523,40 +530,103 @@ async def update_order_status(
     return _build_order_response(updated_order)
 
 
+@router.post("/stream/ticket", response_model=StreamTicketResponse, status_code=201)
+async def create_stream_ticket(
+    current_user_id: str = Depends(get_current_user_id_verified),
+):
+    """
+    Issue a single-use, 30-second SSE/WebSocket auth ticket.
+    Call this right before opening the stream connection, then pass
+    ?ticket=<token> instead of the raw JWT in the URL.
+    The ticket is deleted from Redis on first use.
+    """
+    import secrets as _secrets
+    ticket = _secrets.token_urlsafe(32)
+    ticket_key = f"onfood:sse_ticket:{ticket}"
+
+    from app.config import settings as _cfg
+    if _cfg.CACHE_REDIS_URL:
+        try:
+            import redis.asyncio as aioredis
+            r = aioredis.from_url(_cfg.CACHE_REDIS_URL, decode_responses=True)
+            await r.set(ticket_key, current_user_id, ex=30)  # 30-second TTL
+            await r.aclose()
+        except Exception as e:
+            # Fall back to a signed short-lived JWT when Redis is unavailable
+            from app.security import create_access_token
+            print(f"[SSE Ticket] Redis unavailable, falling back to JWT: {e}")
+            ticket = create_access_token(current_user_id, token_version=1)
+    else:
+        # No Redis: use a short-lived JWT as the ticket (development only)
+        from app.security import create_access_token
+        ticket = create_access_token(current_user_id, token_version=1)
+
+    return StreamTicketResponse(ticket=ticket, expires_in_seconds=30)
 @router.get("/stream/{userId}")
 async def stream_order_status(
     userId: str,
-    token: str = Query(None, description="JWT token (use when Authorization header is not possible, e.g. SSE)"),
+    request: Request,
+    ticket: str = Query(None, description="One-time SSE ticket from POST /stream/ticket (preferred)"),
+    token: str = Query(None, description="JWT token fallback (leaks to proxy logs — prefer ticket)"),
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
 ):
     """
-    Persistent SSE stream for real-time order status tracking.
+    SSE stream for real-time order status tracking.
 
-    Auth options (one is required):
-      1. Header:         Authorization: Bearer <token>   (standard)
-      2. Query param:    ?token=<token>                  (for SSE clients that can't set headers)
+    Auth options (one is required, in priority order):
+      1. One-time ticket: ?ticket=<token>  (preferred — get from POST /stream/ticket)
+      2. Header:          Authorization: Bearer <token>   (standard fallback)
+      3. Query param JWT: ?token=<token>   (last resort — leaks to proxy logs)
     """
-    from app.security import settings
+    from app.config import settings as _cfg
     import jwt as pyjwt
 
-    raw_token = None
-    if credentials:
-        raw_token = credentials.credentials
-    elif token:
-        raw_token = token
+    current_user_id: str | None = None
 
-    if not raw_token:
-        raise BadRequestException("Authentication required. Pass token in Authorization header or ?token= query param.")
+    # ── Priority 1: One-time Redis ticket ──
+    ticket = request.query_params.get("ticket")
+    if ticket:
+        if _cfg.CACHE_REDIS_URL:
+            try:
+                import redis.asyncio as aioredis
+                r = aioredis.from_url(_cfg.CACHE_REDIS_URL, decode_responses=True)
+                stored_user_id = await r.get(f"onfood:sse_ticket:{ticket}")
+                if stored_user_id:
+                    await r.delete(f"onfood:sse_ticket:{ticket}")  # single-use
+                    current_user_id = stored_user_id
+                await r.aclose()
+            except Exception as e:
+                print(f"[SSE Auth] Redis error during ticket validation: {e}")
+        else:
+            # No Redis — treat ticket as a short-lived JWT (dev fallback)
+            try:
+                from app.security import settings as _sec_settings
+                p = pyjwt.decode(ticket, _sec_settings.JWT_SECRET, algorithms=["HS256"], issuer=_sec_settings.JWT_ISSUER)
+                current_user_id = str(p.get("sub", "")) or None
+            except Exception:
+                pass
 
-    try:
-        payload = pyjwt.decode(raw_token, settings.JWT_SECRET, algorithms=["HS256"], issuer=settings.JWT_ISSUER)
-        current_user_id = str(payload.get("sub", ""))
-        if not current_user_id:
-            raise BadRequestException("Invalid token: missing user ID")
-    except pyjwt.ExpiredSignatureError:
-        raise BadRequestException("Token has expired")
-    except pyjwt.InvalidTokenError as e:
-        raise BadRequestException(f"Invalid token: {e}")
+    # ── Priority 2/3: JWT (header or query param) ──
+    if not current_user_id:
+        raw_token = None
+        if credentials:
+            raw_token = credentials.credentials
+        elif token:
+            raw_token = token
+
+        if raw_token:
+            try:
+                from app.security import settings as _sec_settings
+                payload = pyjwt.decode(raw_token, _sec_settings.JWT_SECRET, algorithms=["HS256"], issuer=_sec_settings.JWT_ISSUER)
+                if payload.get("type") == "access":
+                    current_user_id = str(payload.get("sub", "")) or None
+            except pyjwt.ExpiredSignatureError:
+                raise BadRequestException("Token has expired")
+            except pyjwt.InvalidTokenError as e:
+                raise BadRequestException(f"Invalid token: {e}")
+
+    if not current_user_id:
+        raise BadRequestException("Authentication required. Use ?ticket= (preferred) or Authorization header.")
 
     if userId != current_user_id:
         raise BadRequestException("User ID mismatch with authenticated token")
@@ -579,22 +649,41 @@ async def stream_order_status(
 @router.get("/schedule/slots", response_model=List[TimeSlotResponse])
 async def get_schedule_slots(
     date: date = Query(..., description="Date for scheduling (YYYY-MM-DD)"),
-    db: AsyncSession = Depends(get_db)
+    canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    db: AsyncSession = Depends(get_db),
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
 ):
     """
-    Get all active time slots for the requested date, showing availability
-    and bookings count.
+    Get all active time slots for the requested date and canteen, showing
+    availability and bookings count.  Each canteen has its own named breaks
+    (Breakfast, Lunch, Snacks, Dinner …).
+    If canteenId is omitted, resolves from the user's preferred_canteen_id.
     """
     from app.schemas import TimeSlotResponse
-    
-    # Fetch all active slots
+    from sqlalchemy import func, or_
+
+    # ── Resolve canteen ──
+    cid = _parse_optional_uuid(canteen_id)
+    if cid is None and current_user_id:
+        user = (await db.execute(
+            select(User).where(User.id == current_user_id)
+        )).scalar_one_or_none()
+        if user and user.preferred_canteen_id:
+            cid = user.preferred_canteen_id
+
+    # ── Fetch active slots for the canteen (+ global fallback) ──
+    slot_filter = [TimeSlot.is_active == True]
+    if cid:
+        slot_filter.append(
+            or_(TimeSlot.canteen_id == cid, TimeSlot.canteen_id == None)
+        )
+
     slots_res = await db.execute(
-        select(TimeSlot).where(TimeSlot.is_active == True).order_by(TimeSlot.start_time)
+        select(TimeSlot).where(*slot_filter).order_by(TimeSlot.start_time)
     )
     slots = slots_res.scalars().all()
 
-    # Fetch all bookings for this date (excluding DELIVERED)
-    from sqlalchemy import func
+    # ── Bookings count for the date (excluding DELIVERED) ──
     bookings_res = await db.execute(
         select(Order.scheduled_slot_id, func.count(Order.id))
         .where(Order.scheduled_date == date, Order.status != OrderStatus.DELIVERED)
@@ -610,13 +699,12 @@ async def get_schedule_slots(
         booked = bookings_map.get(slot.id, 0)
         remaining = max(0, slot.max_orders - booked)
 
-        # If date is today, check if start_time is in the past
-        is_past = False
-        if date == today and slot.start_time <= now_time:
-            is_past = True
+        is_past = (date == today and slot.start_time <= now_time)
 
         responses.append(TimeSlotResponse(
             id=slot.id,
+            canteen_id=slot.canteen_id,
+            label=slot.label,
             start_time=slot.start_time,
             end_time=slot.end_time,
             max_orders=slot.max_orders,
@@ -626,3 +714,14 @@ async def get_schedule_slots(
         ))
 
     return responses
+
+
+# ── Helper ──────────────────────────────────────
+def _parse_optional_uuid(val: Optional[str]) -> Optional[UUID]:
+    """Safely parse a string to UUID, returning None for empty / invalid."""
+    if not val or not val.strip():
+        return None
+    try:
+        return UUID(val.strip())
+    except ValueError:
+        return None

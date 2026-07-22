@@ -80,7 +80,10 @@ class User(Base):
     college_id = Column(UUID(as_uuid=True), ForeignKey("colleges.id"), nullable=True, index=True)
     preferred_canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id"), nullable=True, index=True)
     use_roll_number_as_order_token = Column(Boolean, nullable=False, default=False, server_default="false")
-    token_version = Column(Integer, nullable=False, default=1, server_default="1")  # Incremented on login → invalidates old sessions
+    token_version = Column(Integer, nullable=False, default=1, server_default="1")  # Incremented on login → invalidates old access tokens
+    # Refresh token fields — bump refresh_token_version to invalidate all refresh tokens
+    refresh_token_hash = Column(String, nullable=True)           # SHA-256 of the current valid refresh token
+    refresh_token_version = Column(Integer, nullable=False, default=1, server_default="1")
     last_order_at = Column(DateTime, nullable=True)
     hashed_password = Column(String, nullable=False)
 
@@ -162,10 +165,14 @@ class TimeSlot(Base):
     __tablename__ = "time_slots"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    canteen_id = Column(UUID(as_uuid=True), ForeignKey("canteens.id", ondelete="CASCADE"), nullable=True, index=True)
+    label = Column(String, nullable=True)  # e.g., "Breakfast", "Lunch Break", "Evening Snacks", "Dinner"
     start_time = Column(Time, nullable=False)
     end_time = Column(Time, nullable=False)
     max_orders = Column(Integer, nullable=False, default=5)
     is_active = Column(Boolean, nullable=False, default=True)
+
+    canteen = relationship("Canteen", foreign_keys=[canteen_id])
 
 
 # ─────────────────────────────────────────────

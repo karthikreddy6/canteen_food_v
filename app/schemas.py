@@ -12,10 +12,22 @@ from app.models import OrderStatus, TicketStatus
 # ─────────────────────────────────────────────
 
 class CamelModel(BaseModel):
+    """Base for response schemas — allows extra fields from DB ORM objects."""
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
-        from_attributes=True
+        from_attributes=True,
+        extra="ignore",
+    )
+
+
+class CamelRequestModel(BaseModel):
+    """Base for request (input) schemas — rejects unknown fields to prevent parameter pollution."""
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+        extra="forbid",
     )
 
 
@@ -39,12 +51,30 @@ class CategoryResponse(CamelModel):
 
 class TimeSlotResponse(CamelModel):
     id: UUID
+    canteen_id: Optional[UUID] = None
+    label: Optional[str] = None  # e.g., "Breakfast", "Lunch", "Evening Snacks", "Dinner"
     start_time: time
     end_time: time
     max_orders: int
     orders_booked: Optional[int] = 0
     orders_remaining: Optional[int] = 0
     is_available: Optional[bool] = True
+
+
+class CreateTimeSlotRequest(CamelRequestModel):
+    canteen_id: Optional[UUID] = None
+    label: Optional[str] = Field(default=None, max_length=100)
+    start_time: time
+    end_time: time
+    max_orders: int = Field(default=5, ge=1, le=50)
+
+
+class UpdateTimeSlotRequest(CamelRequestModel):
+    label: Optional[str] = Field(default=None, max_length=100)
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    max_orders: Optional[int] = Field(default=None, ge=1, le=50)
+    is_active: Optional[bool] = None
 
 
 # ─────────────────────────────────────────────
@@ -84,12 +114,15 @@ class MenuSyncResponse(CamelModel):
 # Cart
 # ─────────────────────────────────────────────
 
-class AddToCartRequest(CamelModel):
+class AddToCartRequest(CamelRequestModel):
     menu_item_id: UUID
-    quantity: int = Field(ge=1)
+    quantity: int = Field(ge=1, le=99)
 
-class UpdateCartItemRequest(CamelModel):
-    quantity: int = Field(ge=1)
+class BulkReplaceCartRequest(CamelRequestModel):
+    items: List[AddToCartRequest]
+
+class UpdateCartItemRequest(CamelRequestModel):
+    quantity: int = Field(ge=1, le=99)
 
 class CartItemResponse(CamelModel):
     id: UUID
@@ -127,18 +160,19 @@ class CartValidateResponse(CamelModel):
 # Order
 # ─────────────────────────────────────────────
 
-class CreateOrderItemRequest(CamelModel):
+class CreateOrderItemRequest(CamelRequestModel):
     menu_item_id: UUID
-    quantity: int = Field(ge=1)
+    quantity: int = Field(ge=1, le=99)
 
-class CreateOrderRequest(CamelModel):
-    user_id: str
+class CreateOrderRequest(CamelRequestModel):
+    # NOTE: user_id is intentionally NOT in this schema — it is derived from
+    # the verified JWT (sub claim) server-side.  Clients must NOT send it.
     total_amount: Decimal
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(default=None, max_length=500)
     items: Optional[List[CreateOrderItemRequest]] = None  # If None, pull from cart
     scheduled_date: Optional[date] = None
     scheduled_slot_id: Optional[UUID] = None
-    coupon_code: Optional[str] = None
+    coupon_code: Optional[str] = Field(default=None, max_length=50)
 
 class OrderItemResponse(CamelModel):
     id: UUID
@@ -170,7 +204,7 @@ class OrderResponse(CamelModel):
     scheduled_slot_id: Optional[UUID] = None
     scheduled_slot: Optional[TimeSlotResponse] = None
 
-class UpdateOrderStatusRequest(CamelModel):
+class UpdateOrderStatusRequest(CamelRequestModel):
     status: OrderStatus
 
 class OrderHistoryResponse(CamelModel):
@@ -217,24 +251,42 @@ class UserResponse(CamelModel):
     use_roll_number_as_order_token: bool = False
     phone_verified: bool = False
 
-class RegisterRequest(CamelModel):
-    name: str
-    email: str
-    password: str
-    phone: str = Field(min_length=1)
+class RegisterRequest(CamelRequestModel):
+    name: str = Field(min_length=1, max_length=100)
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+    phone: str = Field(min_length=1, max_length=20)
     roll_number: str = Field(min_length=1, max_length=50)
     college: str = Field(min_length=1, max_length=200)
     college_id: Optional[UUID] = None
     preferred_canteen_id: Optional[UUID] = None
 
-class LoginRequest(CamelModel):
-    email: str
-    password: str
+class LoginRequest(CamelRequestModel):
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=1, max_length=128)
 
 class LoginResponse(CamelModel):
-    access_token: str
+    access_token: str   # Short-lived (ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token: str  # Long-lived (REFRESH_TOKEN_EXPIRE_DAYS) — store securely
     token_type: str = "bearer"
     user: UserResponse
+
+
+class RefreshRequest(CamelRequestModel):
+    """Body for POST /api/auth/refresh."""
+    refresh_token: str
+
+
+class RefreshResponse(CamelModel):
+    """Response from POST /api/auth/refresh — only a new access token."""
+    access_token: str
+    token_type: str = "bearer"
+
+
+class StreamTicketResponse(CamelModel):
+    """One-time ticket for SSE/WebSocket connections (avoids JWT in URL)."""
+    ticket: str
+    expires_in_seconds: int = 30
 
 
 class RegistrationOtpResponse(CamelModel):
@@ -243,20 +295,20 @@ class RegistrationOtpResponse(CamelModel):
     message: str
 
 
-class VerifyRegistrationOtpRequest(CamelModel):
-    email: str
+class VerifyRegistrationOtpRequest(CamelRequestModel):
+    email: str = Field(min_length=5, max_length=254)
     otp: str = Field(min_length=6, max_length=6)
 
 
-class ResendRegistrationOtpRequest(CamelModel):
-    email: str
-    password: str
+class ResendRegistrationOtpRequest(CamelRequestModel):
+    email: str = Field(min_length=5, max_length=254)
+    password: str = Field(min_length=1, max_length=128)
 
 
-class UpdateProfileRequest(CamelModel):
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    password: Optional[str] = None
+class UpdateProfileRequest(CamelRequestModel):
+    name: Optional[str] = Field(default=None, max_length=100)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    password: Optional[str] = Field(default=None, min_length=8, max_length=128)
     roll_number: Optional[str] = Field(default=None, min_length=1, max_length=50)
     college: Optional[str] = Field(default=None, min_length=1, max_length=200)
     college_id: Optional[UUID] = None
@@ -280,9 +332,9 @@ class FaqCategoryResponse(CamelModel):
     display_order: int
     items: List[FaqItemResponse] = []
 
-class CreateTicketRequest(CamelModel):
-    subject: str
-    message: str
+class CreateTicketRequest(CamelRequestModel):
+    subject: str = Field(min_length=1, max_length=200)
+    message: str = Field(min_length=1, max_length=2000)
 
 class TicketResponse(CamelModel):
     id: UUID

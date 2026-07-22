@@ -4,6 +4,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from pydantic import Field
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,13 +12,13 @@ from app.database import get_db
 from app.exceptions import BadRequestException, NotFoundException
 from app.models import Banner, Coupon, CouponUsage, MenuItem, User
 from app.security import get_current_vendor, get_current_user_id
-from app.schemas import CamelModel
+from app.schemas import CamelModel, CamelRequestModel
 
 router = APIRouter(tags=["Promotions"])
 
 
-class CouponRequest(CamelModel):
-    code: str
+class CouponRequest(CamelRequestModel):
+    code: str = Field(max_length=50)
     discount_type: str = "PERCENT"             # "PERCENT" or "FIXED"
     value: Decimal                              # 10 = 10% or ₹10 fixed
     min_order_amount: Optional[Decimal] = None  # Minimum cart total to apply
@@ -28,20 +29,20 @@ class CouponRequest(CamelModel):
     per_user_limit: Optional[int] = None       # Per-user cap (1 = one-time, None = unlimited)
 
 
-class CouponApplyItem(CamelModel):
+class CouponApplyItem(CamelRequestModel):
     menu_item_id: UUID
     quantity: int
 
 
-class CouponApplyRequest(CamelModel):
-    coupon_code: str
+class CouponApplyRequest(CamelRequestModel):
+    coupon_code: str = Field(max_length=50)
     items: List[CouponApplyItem]
 
 
-class BannerRequest(CamelModel):
-    title: str
-    image_url: str
-    link_url: Optional[str] = None
+class BannerRequest(CamelRequestModel):
+    title: str = Field(max_length=200)
+    image_url: str = Field(max_length=500)
+    link_url: Optional[str] = Field(default=None, max_length=500)
     is_active: bool = True
     display_order: int = 0
     starts_at: Optional[datetime] = None
@@ -112,10 +113,15 @@ async def get_banners(db: AsyncSession = Depends(get_db), current_user_id: str =
 
 
 @router.get("/api/coupons/{code}")
-async def validate_coupon(code: str, db: AsyncSession = Depends(get_db)):
+async def validate_coupon(
+    code: str,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id),
+):
     """
-    Look up a coupon by code. Returns clean public info.
-    404 if not found, expired, or inactive.
+    Look up a coupon by code. Requires authentication to prevent anonymous
+    brute-force enumeration of coupon codes.
+    Returns clean public info. 404 if not found, expired, or inactive.
     """
     result = await db.execute(select(Coupon).where(Coupon.code == code.strip().upper()))
     coupon = result.scalar_one_or_none()

@@ -6,10 +6,10 @@ from sqlalchemy.future import select
 from app.database import get_db
 from app.models import CartItem, MenuItem
 from app.schemas import (
-    CartResponse, CartItemResponse, AddToCartRequest,
+    CartResponse, CartItemResponse, AddToCartRequest, BulkReplaceCartRequest,
     UpdateCartItemRequest, CartValidateResponse, CartValidateIssue
 )
-from app.security import get_current_user_id
+from app.security import get_current_user_id_verified as get_current_user_id
 from app.exceptions import NotFoundException, BadRequestException
 
 router = APIRouter(prefix="/api/cart", tags=["Cart"])
@@ -168,6 +168,45 @@ async def clear_cart(
     for ci in result.scalars().all():
         await db.delete(ci)
     await db.commit()
+
+
+@router.put("", response_model=CartResponse)
+async def replace_cart(
+    request: BulkReplaceCartRequest,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+):
+    """
+    Atomic cart replacement. Replaces server-side cart state with the provided
+    item list in a single DB transaction. Avoids multi-request latency & partial states.
+    """
+    result = await db.execute(select(CartItem).where(CartItem.user_id == user_id))
+    for ci in result.scalars().all():
+        await db.delete(ci)
+    await db.flush()
+
+    canteen_ids = set()
+    for item_req in request.items:
+        menu_result = await db.execute(select(MenuItem).where(MenuItem.id == item_req.menu_item_id))
+        menu_item = menu_result.scalars().first()
+        if not menu_item:
+            raise NotFoundException(f"Menu item not found: {item_req.menu_item_id}")
+        if not menu_item.is_available:
+            raise BadRequestException(f"'{menu_item.name}' is currently not available")
+        canteen_ids.add(menu_item.canteen_id)
+        db.add(CartItem(
+            user_id=user_id,
+            menu_item_id=item_req.menu_item_id,
+            canteen_id=menu_item.canteen_id,
+            quantity=item_req.quantity
+        ))
+
+    real_canteen_ids = {cid for cid in canteen_ids if cid is not None}
+    if len(real_canteen_ids) > 1:
+        raise BadRequestException("Cart can contain items from only one canteen at a time")
+
+    await db.commit()
+    return await get_cart(db=db, user_id=user_id)
 
 
 @router.post("/validate", response_model=CartValidateResponse)

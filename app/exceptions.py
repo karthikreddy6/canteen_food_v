@@ -1,9 +1,13 @@
 import datetime
+import logging
+import traceback
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.security import UnauthenticatedException
+
+_exc_logger = logging.getLogger("onfood.exceptions")
 
 # --- Custom Exceptions ---
 class NotFoundException(Exception):
@@ -99,9 +103,21 @@ def register_exception_handlers(app: FastAPI):
 
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
-        # Catch all other unhandled exceptions
+        # Log the full exception server-side (with request ID for tracing) so
+        # developers can diagnose it, but NEVER return raw exception text to
+        # clients — it can expose internal paths, DB schema, or stack traces.
+        req_id = getattr(request.state, "request_id", "unknown")
+        _exc_logger.error(
+            "Unhandled exception [req_id=%s] %s %s — %s\n%s",
+            req_id,
+            request.method,
+            request.url.path,
+            repr(exc),
+            traceback.format_exc(),
+        )
         return make_spring_error_response(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             error_name="Internal Server Error",
-            message=str(exc)
+            message="An unexpected error occurred. Please try again or contact support."
         )
+
