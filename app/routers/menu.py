@@ -43,7 +43,7 @@ def _dedupe_menu_items(items: list[MenuItemResponse]) -> list[MenuItemResponse]:
 
 
 async def _all_cached_menu(db: AsyncSession, canteen_id: Optional[UUID] = None) -> list[MenuItemResponse]:
-    cache_key = f"menu:all:{canteen_id or 'all'}"
+    cache_key = f"menu:v3:all:{canteen_id or 'all'}"
     cached_items = await get_json(cache_key)
     if cached_items is not None:
         return _dedupe_menu_items(_menu_from_json(cached_items))
@@ -230,7 +230,7 @@ async def get_discount_items(
 ):
     """Items with active discounts (discount_percent > 0)."""
     cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    cache_key = f"menu:discounts:{cid or 'all'}"
+    cache_key = f"menu:v3:discounts:{cid or 'all'}"
     cached_items = await get_json(cache_key)
     if cached_items is None:
         items = [item for item in await _all_cached_menu(db, cid) if item.discount_percent and item.discount_percent > 0]
@@ -248,7 +248,7 @@ async def get_special_menu(
 ):
     """Items flagged as special offer."""
     cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    cache_key = f"menu:specials:{cid or 'all'}"
+    cache_key = f"menu:v3:specials:{cid or 'all'}"
     cached_items = await get_json(cache_key)
     if cached_items is None:
         items = [item for item in await _all_cached_menu(db, cid) if item.special_offer]
