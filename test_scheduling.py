@@ -6,8 +6,10 @@ from httpx import AsyncClient, ASGITransport
 # Disable order cooldown during testing
 os.environ["ORDER_COOLDOWN_SECONDS"] = "0"
 
+import pytest
 from app.main import app
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_order_scheduling():
     client_headers = {"X-App-Key": "ONFOOD_SECURE_CLIENT_APP_KEY_2026"}
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", headers=client_headers) as c:

@@ -1,9 +1,9 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel
 from uuid import UUID
 from decimal import Decimal
 from datetime import datetime, date, time
-from typing import List, Optional
+from typing import List, Optional, Any
 from app.models import OrderStatus, TicketStatus
 
 
@@ -90,10 +90,19 @@ class MenuItemResponse(CamelModel):
     category_id: Optional[UUID] = None
     canteen_id: Optional[UUID] = None
     image_url: Optional[str] = Field(None, serialization_alias="imageUrl")
+    quantity: int = 0
     special_offer: bool = Field(False, serialization_alias="specialOffer")
     is_available: bool = True
     preparation_time_minutes: int = 10
     updated_at: Optional[datetime] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_quantity(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "quantity" not in data and "stock" in data:
+                data["quantity"] = data["stock"]
+        return data
 
 
 class MenuPageResponse(CamelModel):

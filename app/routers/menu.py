@@ -49,7 +49,6 @@ async def _all_cached_menu(db: AsyncSession, canteen_id: Optional[UUID] = None) 
         return _dedupe_menu_items(_menu_from_json(cached_items))
     
     stmt = select(MenuItem).join(MenuItem.canteen).where(
-        MenuItem.is_available == True,
         Canteen.is_active == True
     )
     if canteen_id:
@@ -64,7 +63,6 @@ async def _all_cached_menu(db: AsyncSession, canteen_id: Optional[UUID] = None) 
 
 async def _category_item_counts(db: AsyncSession, canteen_id: Optional[UUID] = None) -> dict:
     stmt = select(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name).join(MenuItem.canteen).where(
-        MenuItem.is_available == True,
         Canteen.is_active == True
     )
     if canteen_id:

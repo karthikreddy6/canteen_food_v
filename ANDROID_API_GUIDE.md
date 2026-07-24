@@ -295,6 +295,7 @@ Example:
       "categoryId": "uuid",
       "canteenId": "canteen-uuid",
       "imageUrl": "/images/chicken-biryani.png",
+      "quantity": 50,
       "specialOffer": true,
       "isAvailable": true,
       "preparationTimeMinutes": 18,

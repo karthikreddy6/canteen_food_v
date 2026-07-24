@@ -201,6 +201,14 @@ class MenuItem(Base):
     cart_items = relationship("CartItem", back_populates="menu_item")
     canteen = relationship("Canteen", back_populates="menu_items")
 
+    @property
+    def quantity(self) -> int:
+        return self.stock if self.stock is not None else 0
+
+    @quantity.setter
+    def quantity(self, value: int) -> None:
+        self.stock = value
+
 
 # ─────────────────────────────────────────────
 # CartItem

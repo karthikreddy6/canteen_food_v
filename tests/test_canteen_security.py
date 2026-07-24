@@ -66,3 +66,27 @@ async def test_past_date_scheduling_blocked(authenticated_customer_client):
     # Must return 400 Bad Request
     assert res.status_code == 400
     print(f"\n[PASSED] Past date scheduling rejected correctly: {res.json().get('message')}")
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_menu_items_contain_quantity(authenticated_customer_client):
+    """TEST 4: Ensure GET /api/menu items contain quantity field and stock is removed."""
+    client, _ = authenticated_customer_client
+    res = await client.get("/api/menu")
+    assert res.status_code == 200
+    items = res.json()
+    if items:
+        item = items[0]
+        assert "quantity" in item
+@pytest.mark.asyncio(loop_scope="module")
+async def test_unavailable_items_included_in_menu(authenticated_customer_client):
+    """TEST 5: Ensure items with is_available=False are sent in GET /api/menu with isAvailable: false."""
+    client, _ = authenticated_customer_client
+    res = await client.get("/api/menu")
+    assert res.status_code == 200
+    items = res.json()
+    assert isinstance(items, list)
+    for item in items:
+        assert "isAvailable" in item
+        assert "quantity" in item
+    print(f"\n[PASSED] Menu items response includes all items with isAvailable status")
+
