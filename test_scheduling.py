@@ -1,15 +1,20 @@
 import asyncio
+import os
 from datetime import date, timedelta
 from httpx import AsyncClient, ASGITransport
+
+# Disable order cooldown during testing
+os.environ["ORDER_COOLDOWN_SECONDS"] = "0"
+
 from app.main import app
 
 async def test_order_scheduling():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        # 1. Login
-        print("Logging in...")
+    client_headers = {"X-App-Key": "ONFOOD_SECURE_CLIENT_APP_KEY_2026"}
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", headers=client_headers) as c:
+        import hashlib
         login_res = await c.post("/api/auth/login", json={
             "email": "karthik@example.com",
-            "password": "karthik_password"
+            "password": hashlib.sha256(b"karthik_password").hexdigest()
         })
         login_data = login_res.json()
         token = login_data["accessToken"]
@@ -37,7 +42,7 @@ async def test_order_scheduling():
         
         # Get menu items
         menu_res = await c.get("/api/menu")
-        pizza = next(i for i in menu_res.json() if "Pizza" in i["name"])
+        pizza = next(i for i in menu_res.json() if "Biryani" in i["name"])
         
         # 3. Book the slot up to limit
         max_capacity = slot["maxOrders"]
@@ -49,7 +54,6 @@ async def test_order_scheduling():
             await c.post("/api/cart/items", headers=headers, json={"menuItemId": pizza["id"], "quantity": 1})
             
             res = await c.post("/api/orders", headers=headers, json={
-                "userId": user_id,
                 "totalAmount": float(pizza["price"]),
                 "scheduledDate": target_date,
                 "scheduledSlotId": slot_id
@@ -68,7 +72,6 @@ async def test_order_scheduling():
         await c.post("/api/cart/items", headers=headers, json={"menuItemId": pizza["id"], "quantity": 1})
         
         failed_res = await c.post("/api/orders", headers=headers, json={
-            "userId": user_id,
             "totalAmount": float(pizza["price"]),
             "scheduledDate": target_date,
             "scheduledSlotId": slot_id

@@ -28,6 +28,46 @@ from app.services.pickup import get_next_pickup_number
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
 
+def order_json(order: Order) -> dict:
+    items_summary = ", ".join(
+        f"{item.menu_item.name if item.menu_item else item.menu_item_id} x {item.quantity}"
+        for item in order.items
+    )
+    student_name = order.user.name if order.user else "Student"
+    placed_time = order.created_at.strftime("%Y-%m-%d %H:%M:%S") if order.created_at else None
+    return {
+        "id": str(order.id),
+        "userId": order.user_id,
+        "canteenId": str(order.canteen_id) if order.canteen_id else None,
+        "status": order.status.value,
+        "totalAmount": float(order.total_amount),
+        "pickupNumber": order.pickup_number,
+        "token": order.order_token or (str(order.pickup_number) if order.pickup_number is not None else str(order.id)[:8]),
+        "studentName": student_name,
+        "student_name": student_name,
+        "rollNo": order.user_roll_number or "",
+        "roll_no": order.user_roll_number or "",
+        "branch": order.user.college if order.user and order.user.college else "",
+        "itemsSummary": items_summary,
+        "items_summary": items_summary,
+        "total_amount": float(order.total_amount),
+        "placed_time": placed_time,
+        "scheduledDate": order.scheduled_date.isoformat() if order.scheduled_date else None,
+        "scheduledSlotId": str(order.scheduled_slot_id) if order.scheduled_slot_id else None,
+        "notes": order.notes,
+        "createdAt": order.created_at.isoformat() if order.created_at else None,
+        "items": [
+            {
+                "menuItemId": str(item.menu_item_id),
+                "name": item.menu_item.name if item.menu_item else None,
+                "quantity": item.quantity,
+                "price": str(item.price_at_time_of_order)
+            }
+            for item in order.items
+        ]
+    }
+
+
 def _roll_number_token(roll_number: str | None, fallback: int) -> str:
     """Return the final three numeric characters of a roll number."""
     digits = re.sub(r"\D", "", roll_number or "")
@@ -85,10 +125,12 @@ def _build_order_response(order: Order) -> OrderResponse:
 
 
 async def _load_order_for_response(db: AsyncSession, order_id: UUID) -> Order | None:
+    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Order)
         .options(
             selectinload(Order.items).selectinload(OrderItem.menu_item),
+            selectinload(Order.user),
             selectinload(Order.scheduled_slot),
         )
         .where(Order.id == order_id)
@@ -124,7 +166,6 @@ async def _auto_progress_order(order_id: str):
             # Cross-notify vendor (real-time sync)
             try:
                 from app.pubsub import event_bridge
-                from app.routers.vendor import order_json
                 payload = order_json(order)
                 await event_bridge.notify("order_status_updated", payload)
             except Exception as e:
@@ -199,7 +240,7 @@ async def create_order(
     order_items = []
     requested_item_ids = [item_req.menu_item_id for item_req in item_requests]
     menu_result = await db.execute(
-        select(MenuItem).where(MenuItem.id.in_(requested_item_ids))
+        select(MenuItem).where(MenuItem.id.in_(requested_item_ids)).with_for_update()
     )
     menu_items_by_id = {item.id: item for item in menu_result.scalars().all()}
 
@@ -217,6 +258,16 @@ async def create_order(
                 f"'{menu_item.name}' is currently not available. "
                 "Please remove it from your cart and try again."
             )
+
+        # Validate stock quantity
+        if menu_item.stock < item_req.quantity:
+            raise BadRequestException(
+                f"Insufficient stock for '{menu_item.name}'. "
+                f"Available: {menu_item.stock}, requested: {item_req.quantity}."
+            )
+
+        # Decrement stock
+        menu_item.stock -= item_req.quantity
 
         item_price = Decimal(str(menu_item.price))
         calculated_total += item_price * item_req.quantity
@@ -348,7 +399,6 @@ async def create_order(
         scheduled_dt = datetime.combine(request.scheduled_date, slot.end_time)
     else:
         # Calculate ETA (only for immediate orders)
-        from datetime import timedelta
         base_prep = max(prep_times) if prep_times else 10
         queue_buffer = max(0, active_count) * settings.base_prep_buffer_minutes
         scheduled_dt = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(
@@ -401,7 +451,6 @@ async def create_order(
     # 11b. Cross-broadcast new order to vendor app screens (real-time sync)
     try:
         from app.pubsub import event_bridge
-        from app.routers.vendor import order_json
         payload = order_json(saved_order)
         await event_bridge.notify("order_created", payload)
     except Exception as e:
@@ -423,7 +472,6 @@ async def create_order(
             })
             try:
                 from app.pubsub import event_bridge
-                from app.routers.vendor import order_json
                 await event_bridge.notify("order_status_updated", order_json(saved_order))
             except Exception as e:
                 print(f"[SSE Error] Failed to broadcast canteen auto-acceptance to vendor: {e}")
@@ -499,9 +547,25 @@ async def update_order_status(
         from app.exceptions import BadRequestException
         raise BadRequestException("You are not authorised to update this order")
 
+    # If transitioning to a cancelled/rejected state from an active state, restore stock
+    is_cancelling = request.status in {OrderStatus.REJECTED, OrderStatus.CANCELLED}
+    was_cancelled = order.status in {OrderStatus.REJECTED, OrderStatus.CANCELLED}
+    if is_cancelling and not was_cancelled:
+        for oi in order.items:
+            if oi.menu_item:
+                oi.menu_item.stock += oi.quantity
+
     order.status = request.status
     if request.status == OrderStatus.DELIVERED:
         order.actual_ready_at = datetime.now(timezone.utc)
+
+    # Construct the payload before commit to avoid any session expiration / lazy loading issues
+    try:
+        payload = order_json(order)
+    except Exception as e:
+        print(f"[SSE Error] Failed to serialize order payload: {e}")
+        payload = None
+
     await db.commit()
 
     updated_at_str = datetime.now(timezone.utc).isoformat()
@@ -518,13 +582,12 @@ async def update_order_status(
     })
 
     # Cross-notify vendor (real-time sync)
-    try:
-        from app.pubsub import event_bridge
-        from app.routers.vendor import order_json
-        payload = order_json(order)
-        await event_bridge.notify("order_status_updated", payload)
-    except Exception as e:
-        print(f"[SSE Error] Failed to broadcast status update to vendor: {e}")
+    if payload:
+        try:
+            from app.pubsub import event_bridge
+            await event_bridge.notify("order_status_updated", payload)
+        except Exception as e:
+            print(f"[SSE Error] Failed to broadcast status update to vendor: {e}")
 
     updated_order = await _load_order_for_response(db, orderId)
     return _build_order_response(updated_order)

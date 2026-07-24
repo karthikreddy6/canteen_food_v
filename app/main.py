@@ -359,6 +359,7 @@ async def websocket_orders_endpoint(websocket: WebSocket, userId: str):
 # ─── Seeder ────────────────────────────────────
 
 async def seed_database():
+    import hashlib
     async with AsyncSessionLocal() as db:
 
         college_to_canteens = {
@@ -467,7 +468,7 @@ async def seed_database():
                         email=email,
                         role="admin",
                         canteen_id=canteens[canteen_name].id,
-                        hashed_password=hash_password("vendor_password"),
+                        hashed_password=hash_password(hashlib.sha256(b"vendor_password").hexdigest()),
                     )
                 )
             else:
@@ -491,7 +492,7 @@ async def seed_database():
                 college="Engineering College",
                 college_id=colleges["Engineering College"].id,
                 preferred_canteen_id=canteens["Central Canteen"].id,
-                hashed_password=hash_password("karthik_password")
+                hashed_password=hash_password(hashlib.sha256(b"karthik_password").hexdigest())
             ))
 
         # ── Categories ──
@@ -620,7 +621,7 @@ async def seed_database():
                 email="vendor@onfood.local",
                 role="admin",
                 canteen_id=canteens["Central Canteen"].id,
-                hashed_password=hash_password("vendor_password")
+                hashed_password=hash_password(hashlib.sha256(b"vendor_password").hexdigest())
             ))
         else:
             if legacy_vendor.canteen_id is None:
