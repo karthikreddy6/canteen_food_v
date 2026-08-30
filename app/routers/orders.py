@@ -120,7 +120,8 @@ def _build_order_response(order: Order) -> OrderResponse:
         items=items,
         scheduled_date=order.scheduled_date,
         scheduled_slot_id=order.scheduled_slot_id,
-        scheduled_slot=scheduled_slot_resp
+        scheduled_slot=scheduled_slot_resp,
+        points_earned=order.points_earned or 0,
     )
 
 
@@ -443,6 +444,26 @@ async def create_order(
     for ci in cart_result2.scalars().all():
         await db.delete(ci)
 
+    # 10b. Earn reward points (Premium users only)
+    if user.is_premium:
+        from app.models import PointsTransaction, PointsTransactionType
+        points_per_rupee = Decimal("0.1")  # ₹10 spent = 1 point
+        premium_multiplier = Decimal("2.0")  # Premium users earn 2×
+        base_points = int(final_total * points_per_rupee)
+        earned_points = int(base_points * premium_multiplier)
+        if earned_points > 0:
+            new_order.points_earned = earned_points
+            user.reward_points_balance += earned_points
+            user.lifetime_points_earned += earned_points
+            db.add(PointsTransaction(
+                user_id=user_id,
+                order_id=new_order.id,
+                type=PointsTransactionType.EARNED,
+                points=earned_points,
+                balance_after=user.reward_points_balance,
+                description=f"Earned {earned_points} points from order",
+            ))
+
     await db.commit()
 
     # 11. Re-fetch with relationships
@@ -554,6 +575,27 @@ async def update_order_status(
         for oi in order.items:
             if oi.menu_item:
                 oi.menu_item.stock += oi.quantity
+
+        # Refund reward points earned from this order
+        if order.points_earned and order.points_earned > 0:
+            from app.models import PointsTransaction, PointsTransactionType
+            user_result = await db.execute(
+                select(User).where(User.id == order.user_id).with_for_update()
+            )
+            order_user = user_result.scalars().first()
+            if order_user:
+                refund_points = order.points_earned
+                order_user.reward_points_balance = max(0, order_user.reward_points_balance - refund_points)
+                order_user.lifetime_points_earned = max(0, order_user.lifetime_points_earned - refund_points)
+                db.add(PointsTransaction(
+                    user_id=order.user_id,
+                    order_id=order.id,
+                    type=PointsTransactionType.REFUNDED,
+                    points=-refund_points,
+                    balance_after=order_user.reward_points_balance,
+                    description=f"Refunded {refund_points} points from cancelled order",
+                ))
+                order.points_earned = 0
 
     order.status = request.status
     if request.status == OrderStatus.DELIVERED:

@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 from fastapi import Depends, Request
+from starlette.requests import HTTPConnection
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 import datetime
@@ -228,13 +229,14 @@ async def get_current_vendor(
 
 # ─── App-Client Identity Guard ───────────────────────────────
 
-async def require_app_client(request: Request) -> None:
+async def require_app_client(request: HTTPConnection) -> None:
     """
     Global dependency — applied to every route via FastAPI(dependencies=[...]).
 
     Rejects any request that does not carry the correct X-App-Key header.
     This stops casual browser, curl, and Postman access.
 
+    Supports both standard HTTP Request and WebSocket connections via HTTPConnection.
     When APP_CLIENT_KEY is None (development default) the check is skipped
     so local dev workflow is not disrupted.
     """

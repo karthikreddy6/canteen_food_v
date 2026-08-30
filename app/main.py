@@ -17,7 +17,7 @@ from app.database import AsyncSessionLocal
 from app.exceptions import register_exception_handlers
 from app.models import User, MenuItem, Category, KitchenSettings, FaqCategory, FaqItem, TimeSlot, VendorAccount, College, Canteen, Banner, college_canteens
 from app.security import hash_password, require_app_client
-from app.routers import menu, orders, auth, cart, kitchen, help as help_router, promotions, locations
+from app.routers import menu, orders, auth, cart, kitchen, help as help_router, promotions, locations, rewards
 from app.config import settings as app_config
 
 
@@ -292,6 +292,7 @@ app.include_router(kitchen.router)
 app.include_router(help_router.router)
 app.include_router(promotions.router)
 app.include_router(locations.router)
+app.include_router(rewards.router)
 app.mount("/icons", StaticFiles(directory="app/static/icons"), name="icons")
 app.mount("/images", StaticFiles(directory="app/static/images"), name="images")
 app.mount("/sounds", StaticFiles(directory="app/static/sounds"), name="sounds")
@@ -481,9 +482,10 @@ async def seed_database():
             db.add(KitchenSettings(id=1, base_prep_buffer_minutes=3,
                                    max_concurrent_orders=20, is_accepting_orders=True))
 
-        # ── Default User ──
+        # ── Default User (Premium) ──
         user_result = await db.execute(select(User).where(User.email == "karthik@example.com"))
-        if not user_result.scalars().first():
+        existing_karthik = user_result.scalars().first()
+        if not existing_karthik:
             db.add(User(
                 name="Karthik",
                 email="karthik@example.com",
@@ -492,8 +494,36 @@ async def seed_database():
                 college="Engineering College",
                 college_id=colleges["Engineering College"].id,
                 preferred_canteen_id=canteens["Central Canteen"].id,
-                hashed_password=hash_password(hashlib.sha256(b"karthik_password").hexdigest())
+                hashed_password=hash_password(hashlib.sha256(b"karthik_password").hexdigest()),
+                is_premium=True,
+                reward_points_balance=500,
+                lifetime_points_earned=500,
             ))
+        else:
+            existing_karthik.is_premium = True
+            if existing_karthik.reward_points_balance == 0:
+                existing_karthik.reward_points_balance = 500
+                existing_karthik.lifetime_points_earned = 500
+
+        # ── Dedicated Premium User ──
+        prem_result = await db.execute(select(User).where(User.email == "premium@example.com"))
+        existing_prem = prem_result.scalars().first()
+        if not existing_prem:
+            db.add(User(
+                name="Premium User",
+                email="premium@example.com",
+                phone="9876543211",
+                phone_verified=True,
+                college="Engineering College",
+                college_id=colleges["Engineering College"].id,
+                preferred_canteen_id=canteens["Central Canteen"].id,
+                hashed_password=hash_password(hashlib.sha256(b"premium_password").hexdigest()),
+                is_premium=True,
+                reward_points_balance=1000,
+                lifetime_points_earned=1000,
+            ))
+        else:
+            existing_prem.is_premium = True
 
         # ── Categories ──
         cat_result = await db.execute(select(Category))

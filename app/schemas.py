@@ -4,7 +4,7 @@ from uuid import UUID
 from decimal import Decimal
 from datetime import datetime, date, time
 from typing import List, Optional, Any
-from app.models import OrderStatus, TicketStatus
+from app.models import OrderStatus, TicketStatus, PointsTransactionType
 
 
 # ─────────────────────────────────────────────
@@ -212,6 +212,7 @@ class OrderResponse(CamelModel):
     scheduled_date: Optional[date] = None
     scheduled_slot_id: Optional[UUID] = None
     scheduled_slot: Optional[TimeSlotResponse] = None
+    points_earned: int = 0
 
 class UpdateOrderStatusRequest(CamelRequestModel):
     status: OrderStatus
@@ -259,6 +260,10 @@ class UserResponse(CamelModel):
     preferred_canteen_id: Optional[UUID] = None
     use_roll_number_as_order_token: bool = False
     phone_verified: bool = False
+    # Reward Points & Premium
+    reward_points_balance: int = 0
+    lifetime_points_earned: int = 0
+    is_premium: bool = False
 
 class RegisterRequest(CamelRequestModel):
     name: str = Field(min_length=1, max_length=100)
@@ -351,3 +356,85 @@ class TicketResponse(CamelModel):
     message: str
     status: TicketStatus
     created_at: datetime
+
+
+# ─────────────────────────────────────────────
+# Rewards & Brand Coupons
+# ─────────────────────────────────────────────
+
+class RewardsSummaryResponse(CamelModel):
+    reward_points_balance: int
+    lifetime_points_earned: int
+    is_premium: bool
+    premium_expires_at: Optional[datetime] = None
+
+class PointsTransactionResponse(CamelModel):
+    id: UUID
+    order_id: Optional[UUID] = None
+    type: PointsTransactionType
+    points: int
+    balance_after: int
+    description: Optional[str] = None
+    created_at: datetime
+
+class PointsHistoryResponse(CamelModel):
+    transactions: List[PointsTransactionResponse]
+    total: int
+    page: int
+    limit: int
+
+class BrandCouponResponse(CamelModel):
+    """Brand coupon visible in the catalog (unclaimed coupons — code is hidden)."""
+    id: UUID
+    brand_name: str
+    brand_logo_url: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    points_cost: int
+
+class ClaimedCouponResponse(CamelModel):
+    """A brand coupon claimed by the user — coupon code is revealed."""
+    id: UUID
+    brand_name: str
+    brand_logo_url: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    coupon_code: str
+    points_cost: int
+    claimed_at: datetime
+
+class BrandCouponAdminResponse(CamelModel):
+    """Full brand coupon info for vendor dashboard."""
+    id: UUID
+    brand_name: str
+    brand_logo_url: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    coupon_code: str
+    points_cost: int
+    is_claimed: bool
+    claimed_by: Optional[str] = None
+    claimed_at: Optional[datetime] = None
+    is_active: bool
+    created_at: datetime
+
+class CreateBrandCouponRequest(CamelRequestModel):
+    brand_name: str = Field(min_length=1, max_length=100)
+    brand_logo_url: Optional[str] = Field(default=None, max_length=500)
+    title: str = Field(min_length=1, max_length=200)
+    description: Optional[str] = Field(default=None, max_length=1000)
+    coupon_code: str = Field(min_length=1, max_length=100)
+    points_cost: int = Field(ge=1)
+
+class BulkCreateBrandCouponRequest(CamelRequestModel):
+    brand_name: str = Field(min_length=1, max_length=100)
+    brand_logo_url: Optional[str] = Field(default=None, max_length=500)
+    title: str = Field(min_length=1, max_length=200)
+    description: Optional[str] = Field(default=None, max_length=1000)
+    coupon_codes: List[str] = Field(min_length=1)
+    points_cost: int = Field(ge=1)
+
+class GrantBonusPointsRequest(CamelRequestModel):
+    user_id: str
+    points: int = Field(ge=1)
+    description: Optional[str] = Field(default=None, max_length=500)

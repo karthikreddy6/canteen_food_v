@@ -28,6 +28,12 @@ class TicketStatus(str, enum.Enum):
     IN_PROGRESS = "IN_PROGRESS"
     RESOLVED = "RESOLVED"
 
+class PointsTransactionType(str, enum.Enum):
+    EARNED = "EARNED"        # Points earned from a completed order
+    REDEEMED = "REDEEMED"    # Points spent to claim a brand coupon
+    BONUS = "BONUS"          # Admin-granted bonus points
+    REFUNDED = "REFUNDED"    # Points returned (order cancelled)
+
 
 college_canteens = Table(
     "college_canteens", Base.metadata,
@@ -79,12 +85,21 @@ class User(Base):
     last_order_at = Column(DateTime, nullable=True)
     hashed_password = Column(String, nullable=False)
 
+    # Reward Points (only active when is_premium = True)
+    reward_points_balance = Column(Integer, nullable=False, default=0, server_default="0")
+    lifetime_points_earned = Column(Integer, nullable=False, default=0, server_default="0")
+
+    # Premium Membership
+    is_premium = Column(Boolean, nullable=False, default=False, server_default="false")
+    premium_expires_at = Column(DateTime, nullable=True)  # NULL = no expiry
+
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
     tickets = relationship("SupportTicket", back_populates="user", cascade="all, delete-orphan")
     college_record = relationship("College", foreign_keys=[college_id])
     preferred_canteen = relationship("Canteen", foreign_keys=[preferred_canteen_id])
     registration_otp = relationship("RegistrationOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
+    points_transactions = relationship("PointsTransaction", back_populates="user", cascade="all, delete-orphan")
 
 
 class RegistrationOtp(Base):
@@ -258,6 +273,8 @@ class Order(Base):
 
     # User notes / special instructions
     notes = Column(String, nullable=True)
+    # Reward points earned from this order (only for premium users)
+    points_earned = Column(Integer, nullable=False, default=0, server_default="0")
     created_at = Column(DateTime, nullable=False,
                         default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
                         server_default=func.now())
@@ -393,3 +410,43 @@ class SupportTicket(Base):
                         default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     user = relationship("User", back_populates="tickets")
+
+
+# ─────────────────────────────────────────────
+# Points Transaction (reward points audit log)
+# ─────────────────────────────────────────────
+
+class PointsTransaction(Base):
+    __tablename__ = "points_transactions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="SET NULL"), nullable=True)
+    type = Column(Enum(PointsTransactionType, name="points_transaction_type"), nullable=False)
+    points = Column(Integer, nullable=False)         # +ve = credit, -ve = debit
+    balance_after = Column(Integer, nullable=False)
+    description = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    user = relationship("User", back_populates="points_transactions")
+
+
+# ─────────────────────────────────────────────
+# Brand Coupon (redeemable with reward points)
+# ─────────────────────────────────────────────
+
+class BrandCoupon(Base):
+    __tablename__ = "brand_coupons"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    brand_name = Column(String, nullable=False)              # "Swiggy", "Amazon", "Zomato"
+    brand_logo_url = Column(String, nullable=True)
+    title = Column(String, nullable=False)                   # "₹50 off on Swiggy"
+    description = Column(Text, nullable=True)
+    coupon_code = Column(String, nullable=False)             # Actual code: "SWIGGY50OFF"
+    points_cost = Column(Integer, nullable=False)            # e.g. 500
+    is_claimed = Column(Boolean, nullable=False, default=False, server_default="false")
+    claimed_by = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    claimed_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True, server_default="true")
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
