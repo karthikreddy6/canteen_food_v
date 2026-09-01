@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     TRUSTED_PROXY_IPS: list[str] = ["127.0.0.1"]
 
     # ── Feature flags ─────────────────────────────────────────────────────────
+    # Set to False in production if you want to hide /docs and /redoc from public scanning
+    ENABLE_DOCS: bool = True
+
     # Set to False to suppress vendor coupon/banner endpoints while the vendor
     # router is disabled.
     VENDOR_ENDPOINTS_ENABLED: bool = True

@@ -256,11 +256,15 @@ def get_client_ip(request: Request) -> str:
     """
     Return the real client IP address.
 
-    Behind a trusted reverse proxy (ngrok, Nginx, Caddy) the original client
-    IP is forwarded in the X-Forwarded-For header. We only trust that header
-    when the request arrives from a known proxy IP (settings.TRUSTED_PROXY_IPS).
-    In all other cases we fall back to the raw socket peer address.
+    1. Cloudflare Tunnel / Proxy: checks 'cf-connecting-ip' header first.
+    2. Other trusted reverse proxies: checks 'x-forwarded-for' when request arrives
+       from a trusted proxy IP (settings.TRUSTED_PROXY_IPS).
+    3. Falls back to raw socket peer address.
     """
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        return cf_ip.strip()
+
     peer = request.client.host if request.client else "unknown"
     if peer in settings.TRUSTED_PROXY_IPS:
         forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()

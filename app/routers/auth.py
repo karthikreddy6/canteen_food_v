@@ -179,9 +179,9 @@ async def verify_otp(
     now = datetime.datetime.utcnow()
 
     is_valid_otp = False
-    if user.phone and len(user.phone) >= 4:
-        last_four = user.phone[-4:]
-        if secrets.compare_digest(request.otp, last_four):
+    if user.phone:
+        digits_only = "".join(c for c in user.phone if c.isdigit())
+        if len(digits_only) >= 6 and secrets.compare_digest(request.otp, digits_only[-6:]):
             is_valid_otp = True
 
     if not is_valid_otp:

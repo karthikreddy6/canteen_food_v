@@ -6,7 +6,7 @@ import uuid
 from contextlib import asynccontextmanager
 from decimal import Decimal
 import json
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Response, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -16,7 +16,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.database import AsyncSessionLocal
 from app.exceptions import register_exception_handlers
 from app.models import User, MenuItem, Category, KitchenSettings, FaqCategory, FaqItem, TimeSlot, VendorAccount, College, Canteen, Banner, college_canteens
-from app.security import hash_password, require_app_client
+from app.security import hash_password, require_app_client, get_client_ip
 from app.routers import menu, orders, auth, cart, kitchen, help as help_router, promotions, locations, rewards
 from app.config import settings as app_config
 
@@ -119,7 +119,10 @@ app = FastAPI(
     description="Complete Python FastAPI backend for OnFood Android food ordering app.",
     version="2.0.0",
     lifespan=lifespan,
-    dependencies=[Depends(require_app_client)]
+    dependencies=[Depends(require_app_client)],
+    docs_url="/docs" if app_config.ENABLE_DOCS else None,
+    redoc_url="/redoc" if app_config.ENABLE_DOCS else None,
+    openapi_url="/openapi.json" if app_config.ENABLE_DOCS else None,
 )
 
 app.add_middleware(
@@ -184,6 +187,9 @@ async def dev_request_logger(request: Request, call_next):
     path = request.url.path
     skip = any(path.startswith(p) for p in _SKIP_LOG_PREFIXES) or path == "/"
 
+    # Extract real client IP (prioritizes CF-Connecting-IP from Cloudflare Tunnel)
+    client_ip = get_client_ip(request)
+
     # ── Incoming request (dev console) ──
     if not skip:
         body_preview = ""
@@ -204,19 +210,17 @@ async def dev_request_logger(request: Request, call_next):
         }
         qs_str = ("?" + "&".join(f"{k}={v}" for k, v in safe_qs.items())) if safe_qs else ""
         print(
-            f"  {_C['grey']}>> [{req_id}]{_C['reset']} "
+            f"  {_C['grey']}>> [{req_id}]{_C['reset']} [{_C['magenta']}{client_ip}{_C['reset']}] "
             f"{_method_color(request.method)}{_C['bold']}{request.method}{_C['reset']} "
             f"{_C['blue']}{path}{qs_str}{_C['reset']}"
-            f"{body_preview}"
+            f"{body_preview}",
+            flush=True
         )
 
     # ── Call actual endpoint ──
     response = await call_next(request)
 
     duration_ms = round((time.perf_counter() - started) * 1000, 2)
-
-    # Capture response body for JSON logging if available without consuming stream
-    response_body = getattr(response, "body", None)
 
     # Attach request-id to response so Android can trace it
     response.headers["X-Request-Id"] = req_id
@@ -228,6 +232,26 @@ async def dev_request_logger(request: Request, call_next):
     # HSTS only makes sense when serving over HTTPS (i.e. production behind ngrok/Nginx)
     if app_config.ENVIRONMENT == "production":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+    # Capture response body for JSON logging without breaking SSE or large binary streams
+    content_type = response.headers.get("content-type", "")
+    is_streaming = "text/event-stream" in content_type or "multipart/" in content_type
+
+    response_body = None
+    if not is_streaming and hasattr(response, "body_iterator"):
+        chunks = []
+        async for chunk in response.body_iterator:
+            chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))
+        response_body = b"".join(chunks)
+        response = Response(
+            content=response_body,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+            background=response.background,
+        )
+    elif hasattr(response, "body"):
+        response_body = response.body
 
     # ── Outgoing response (dev console) ──
     if not skip:
@@ -249,7 +273,8 @@ async def dev_request_logger(request: Request, call_next):
             f"{_status_color(sc)}{_C['bold']}{sc}{_C['reset']} "
             f"{_C['grey']}{duration_ms}ms{_C['reset']}"
             f"{slow_warn}"
-            f"{resp_preview}"
+            f"{resp_preview}",
+            flush=True
         )
 
     # ── File logger ──────────────────────────────────────────────────────────
@@ -264,6 +289,7 @@ async def dev_request_logger(request: Request, call_next):
     }
     request_logger.info(json.dumps({
         "req_id": req_id,
+        "client_ip": client_ip,
         "event": "http_request",
         "method": request.method,
         "path": path,
@@ -273,6 +299,7 @@ async def dev_request_logger(request: Request, call_next):
     response_data = _json_body(response_body) if response_body is not None else None
     response_logger.info(json.dumps({
         "req_id": req_id,
+        "client_ip": client_ip,
         "event": "http_response",
         "method": request.method,
         "path": path,

@@ -24,8 +24,20 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/onfood
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       - db
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: onfood-tunnel
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
