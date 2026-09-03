@@ -14,7 +14,7 @@ from app.models import User, College, Canteen, RegistrationOtp
 from app.schemas import (
     RegisterRequest, UserResponse, LoginRequest, LoginResponse, UpdateProfileRequest,
     RegistrationOtpResponse, VerifyRegistrationOtpRequest, ResendRegistrationOtpRequest,
-    RefreshRequest, RefreshResponse,
+    RefreshRequest, RefreshResponse, DeleteAccountResponse,
 )
 from app.security import (
     hash_password, verify_password, verify_password_async,
@@ -101,14 +101,22 @@ async def register(request: RegisterRequest, http_request: Request, db: AsyncSes
     """Creates a pending account and sends its WhatsApp verification code."""
     phone = normalize_phone(request.phone or "")
     async with db.begin():
+        if not request.roll_number or not (len(request.roll_number) == 3 and request.roll_number.isdigit()):
+            raise BadRequestException("College ID must be a 3-digit number (e.g. 101)")
+
         email_result = await db.execute(select(User).where(User.email == request.email))
         existing_user = email_result.scalars().first()
-        if existing_user and existing_user.phone_verified:
-            raise BadRequestException("A user with this email address already exists")
+        if existing_user:
+            if getattr(existing_user, "status", "active") == "hold":
+                raise BadRequestException("This account is currently on hold. Please contact support.")
+            if existing_user.phone_verified:
+                raise BadRequestException("A user with this email address already exists")
 
         roll_result = await db.execute(select(User).where(User.roll_number == request.roll_number))
         existing_roll_user = roll_result.scalars().first()
         if existing_roll_user and (not existing_user or existing_roll_user.id != existing_user.id):
+            if getattr(existing_roll_user, "status", "active") == "hold":
+                raise BadRequestException("This college ID belongs to an account currently on hold. Please contact support.")
             raise BadRequestException("A user with this roll number already exists")
 
         client_ip = get_client_ip(http_request)
@@ -171,6 +179,8 @@ async def verify_otp(
     user = (await db.execute(select(User).where(User.email == request.email))).scalar_one_or_none()
     if not user or user.phone_verified:
         raise BadRequestException("No pending registration was found for this email")
+    if getattr(user, "status", "active") == "hold":
+        raise BadRequestException("Account is currently on hold. Please contact support.")
 
     verification = (await db.execute(
         select(RegistrationOtp).where(RegistrationOtp.user_id == user.id)
@@ -222,6 +232,8 @@ async def resend_otp(request: ResendRegistrationOtpRequest, db: AsyncSession = D
     user = (await db.execute(select(User).where(User.email == request.email))).scalar_one_or_none()
     if not user or user.phone_verified or not await verify_password_async(request.password, user.hashed_password):
         raise BadRequestException("No pending registration was found for these credentials")
+    if getattr(user, "status", "active") == "hold":
+        raise BadRequestException("Account is currently on hold. Please contact support.")
     await create_and_send_otp(user, db)
     return RegistrationOtpResponse(
         expires_in_minutes=settings.OTP_EXPIRY_MINUTES,
@@ -247,6 +259,9 @@ async def login(request: LoginRequest, http_request: Request, db: AsyncSession =
 
     if not await verify_password_async(request.password, user.hashed_password):
         raise UnauthenticatedException("Invalid email or password")
+
+    if getattr(user, "status", "active") == "hold":
+        raise UnauthenticatedException("Your account is currently on hold. Please contact support.")
 
     if not user.phone_verified:
         raise UnauthenticatedException("Please verify your WhatsApp number before logging in")
@@ -297,6 +312,9 @@ async def refresh_access_token(request: RefreshRequest, db: AsyncSession = Depen
     user = result.scalars().first()
     if not user:
         raise BadRequestException("User not found")
+
+    if getattr(user, "status", "active") == "hold":
+        raise UnauthenticatedException("Account is on hold. Please contact support.")
 
     # Validate refresh_token_version (logout bumps this)
     if token_ver != (user.refresh_token_version or 1):
@@ -358,6 +376,8 @@ async def update_profile(
         if request.phone is not None:
             user.phone = request.phone
         if getattr(request, "roll_number", None) is not None:
+            if not (len(request.roll_number) == 3 and request.roll_number.isdigit()):
+                raise BadRequestException("College ID must be a 3-digit number (e.g. 101)")
             user.roll_number = request.roll_number
         if getattr(request, "college", None) is not None:
             user.college = request.college
@@ -375,3 +395,31 @@ async def update_profile(
     result = await db.execute(select(User).where(User.id == current_user_id))
     updated_user = result.scalars().first()
     return UserResponse.model_validate(updated_user)
+
+
+# ─── Delete Account ────────────────────────────────────────
+
+@router.delete("/account", response_model=DeleteAccountResponse, status_code=200)
+async def delete_account(
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id_verified),
+):
+    """
+    Request account deletion: marks user account status as 'hold' and
+    immediately revokes all active session and refresh tokens.
+    """
+    result = await db.execute(select(User).where(User.id == current_user_id))
+    user = result.scalars().first()
+    if not user:
+        raise NotFoundException("User not found")
+
+    user.status = "hold"
+    user.token_version = (user.token_version or 1) + 1
+    user.refresh_token_version = (user.refresh_token_version or 1) + 1
+    user.refresh_token_hash = None
+    await db.commit()
+
+    return DeleteAccountResponse(
+        message="Account has been placed on hold.",
+        status="hold",
+    )

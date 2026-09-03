@@ -192,11 +192,14 @@ async def get_current_user_id_verified(
     from sqlalchemy.future import select
     from app.models import User
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User.token_version).where(User.id == user_id))
+        result = await db.execute(select(User.token_version, User.status).where(User.id == user_id))
         row = result.first()
         if row is None:
             raise UnauthenticatedException("User account not found")
         db_version = row[0] or 1
+        user_status = row[1] if len(row) > 1 else getattr(row, "status", "active")
+        if user_status == "hold":
+            raise UnauthenticatedException("Account is on hold. Please contact support.")
         if token_ver != db_version:
             raise UnauthenticatedException(
                 "Session expired. Please log in again."

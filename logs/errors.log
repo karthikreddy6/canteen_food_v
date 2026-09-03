@@ -1,0 +1,2670 @@
+2026-09-03 01:24:57,648 ERROR Unhandled exception [req_id=c3ec9af8] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:04,820 ERROR Unhandled exception [req_id=1e16cdc7] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:11,106 ERROR Unhandled exception [req_id=144d671d] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:17,376 ERROR Unhandled exception [req_id=742c03e0] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:23,360 ERROR Unhandled exception [req_id=8cee91aa] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:29,373 ERROR Unhandled exception [req_id=38ba049f] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:35,673 ERROR Unhandled exception [req_id=ba38334f] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:41,688 ERROR Unhandled exception [req_id=f3ce30cd] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:48,185 ERROR Unhandled exception [req_id=03490b81] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:25:54,186 ERROR Unhandled exception [req_id=2603386f] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 243, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:26:00,257 ERROR Unhandled exception [req_id=75cc304a] GET /api/menu — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\menu.py", line 132, in get_menu
+    return await _all_cached_menu(db, cid)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\menu.py", line 58, in _all_cached_menu
+    result = await db.execute(stmt)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:26:06,514 ERROR Unhandled exception [req_id=13f6748b] GET /api/menu/paged — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\menu.py", line 147, in get_menu_paged
+    all_items = await _all_cached_menu(db, cid)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\menu.py", line 58, in _all_cached_menu
+    result = await db.execute(stmt)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 01:26:12,496 ERROR Unhandled exception [req_id=dc89f18f] GET /api/menu/categories — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\menu.py", line 209, in get_categories
+    result = await db.execute(
+             ^^^^^^^^^^^^^^^^^
+        select(Category).where(Category.is_active == True).order_by(Category.display_order)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+
+2026-09-03 16:08:41,781 ERROR Unhandled exception [req_id=7f3f7abc] POST /api/auth/login — ConnectionRefusedError(22, 'The remote computer refused the network connection', None, 1225, None)
+Traceback (most recent call last):
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\main.py", line 221, in dev_request_logger
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 29, in __call__
+    await responder(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 130, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\gzip.py", line 46, in __call__
+    await self.app(scope, receive, self.send_with_compression)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+    await app(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\app\routers\auth.py", line 255, in login
+    result = await db.execute(select(User).where(User.email == request.email))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 448, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2261, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2113, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1191, in _connection_for_bind
+    conn = bind.connect()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3295, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 144, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3319, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 178, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 176, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 667, in connect
+    return dialect.connect(*cargs_tup, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 955, in connect
+    await_only(creator_fn(*arg, **kw)),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1249, in _connect
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+    ...<2 lines>...
+    )
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1054, in _connect_addr
+    return await __connect_addr(params, True, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 1099, in __connect_addr
+    tr, pr = await connector
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\karth\OneDrive\Desktop\onfood\onfoodserver\.venv\Lib\site-packages\asyncpg\connect_utils.py", line 969, in _create_ssl_connection
+    tr, pr = await loop.create_connection(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        host, port)
+        ^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1173, in create_connection
+    raise exceptions[0]
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1143, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 1042, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Python314\Lib\asyncio\proactor_events.py", line 726, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Python314\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+ConnectionRefusedError: [WinError 1225] The remote computer refused the network connection
+

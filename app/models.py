@@ -92,6 +92,8 @@ class User(Base):
     # Premium Membership
     is_premium = Column(Boolean, nullable=False, default=False, server_default="false")
     premium_expires_at = Column(DateTime, nullable=True)  # NULL = no expiry
+    # Account status: 'active', 'hold'
+    status = Column(String, nullable=False, default="active", server_default="active")
 
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")

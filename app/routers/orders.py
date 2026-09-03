@@ -406,6 +406,10 @@ async def create_order(
             minutes=base_prep + queue_buffer
         )
 
+    # ── TEMPORARY CODE: Any order placed is directly delivered ──────────────
+    order_status = OrderStatus.DELIVERED
+    # ───────────────────────────────────────────────────────────────────────────
+
     # 8. Get pickup number
     pickup_num, pickup_dt = await get_next_pickup_number(db)
 
@@ -424,6 +428,7 @@ async def create_order(
                      if user.use_roll_number_as_order_token and user.roll_number
                      else str(pickup_num)),
         estimated_ready_at=scheduled_dt,
+        actual_ready_at=datetime.now(timezone.utc).replace(tzinfo=None) if order_status == OrderStatus.DELIVERED else None,
         scheduled_date=request.scheduled_date,
         scheduled_slot_id=request.scheduled_slot_id,
         notes=request.notes,
@@ -474,8 +479,21 @@ async def create_order(
         from app.pubsub import event_bridge
         payload = order_json(saved_order)
         await event_bridge.notify("order_created", payload)
+        if saved_order.status == OrderStatus.DELIVERED:
+            await event_bridge.notify("order_status_updated", payload)
     except Exception as e:
         print(f"[SSE Error] Failed to broadcast new order to vendor: {e}")
+
+    # Broadcast DELIVERED status to user via SSE
+    if saved_order.status == OrderStatus.DELIVERED:
+        await sse_manager.broadcast_to_user(saved_order.user_id, "order-status", {
+            "orderId": str(saved_order.id),
+            "userId": saved_order.user_id,
+            "status": OrderStatus.DELIVERED.value,
+            "pickupNumber": saved_order.pickup_number,
+            "estimatedReadyAt": saved_order.estimated_ready_at.isoformat() if saved_order.estimated_ready_at else None,
+            "updatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        })
 
     # 12. Auto-accept is controlled per canteen. When disabled (the default),
     # the order stays PLACED until the vendor accepts it.

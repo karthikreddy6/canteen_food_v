@@ -264,13 +264,14 @@ class UserResponse(CamelModel):
     reward_points_balance: int = 0
     lifetime_points_earned: int = 0
     is_premium: bool = False
+    status: str = "active"
 
 class RegisterRequest(CamelRequestModel):
     name: str = Field(min_length=1, max_length=100)
     email: str = Field(min_length=5, max_length=254)
     password: str = Field(min_length=7, max_length=128)
     phone: str = Field(min_length=1, max_length=20)
-    roll_number: str = Field(min_length=1, max_length=50)
+    roll_number: str = Field(pattern=r"^\d{3}$", description="3-digit college ID / roll number (000-999)")
     college: str = Field(min_length=1, max_length=200)
     college_id: Optional[UUID] = None
     preferred_canteen_id: Optional[UUID] = None
@@ -323,11 +324,16 @@ class UpdateProfileRequest(CamelRequestModel):
     name: Optional[str] = Field(default=None, max_length=100)
     phone: Optional[str] = Field(default=None, max_length=20)
     password: Optional[str] = Field(default=None, min_length=8, max_length=128)
-    roll_number: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    roll_number: Optional[str] = Field(default=None, pattern=r"^\d{3}$", description="3-digit college ID / roll number (000-999)")
     college: Optional[str] = Field(default=None, min_length=1, max_length=200)
     college_id: Optional[UUID] = None
     preferred_canteen_id: Optional[UUID] = None
     use_roll_number_as_order_token: Optional[bool] = None
+
+
+class DeleteAccountResponse(CamelModel):
+    message: str
+    status: str = "hold"
 
 
 # ─────────────────────────────────────────────
