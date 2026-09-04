@@ -267,6 +267,9 @@ async def require_app_client(request: HTTPConnection) -> None:
     if not settings.APP_CLIENT_KEY:
         # Guard disabled — development mode
         return
+    # Health check endpoint (/) is used by Docker and load balancers to check liveness
+    if request.url.path == "/":
+        return
     header_value = request.headers.get(settings.APP_CLIENT_KEY_HEADER) or ""
     if not secrets.compare_digest(header_value, settings.APP_CLIENT_KEY):
         raise UnauthenticatedException(

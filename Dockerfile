@@ -28,7 +28,7 @@ EXPOSE 8000
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8000/api/menu/categories || exit 1
+  CMD curl -f http://localhost:8000/ || exit 1
 
 # Run init_db (creates DB, handles fresh tables/migrations), then start server
 CMD ["sh", "-c", "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
