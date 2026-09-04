@@ -1,8 +1,9 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:16-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: onfood-postgres:latest
     container_name: onfood-postgres
     restart: always
     environment:
@@ -13,9 +14,17 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d onfood"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  api:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: onfood-backend:latest
     container_name: onfood-backend
     restart: always
     ports:
@@ -27,7 +36,8 @@ services:
     volumes:
       - ./logs:/app/logs
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:

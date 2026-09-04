@@ -1,0 +1,12 @@
+FROM postgres:16-alpine
+
+# Default environment settings
+ENV POSTGRES_USER=postgres \
+    POSTGRES_PASSWORD=postgres \
+    POSTGRES_DB=onfood
+
+# Health check to ensure PostgreSQL is ready to accept connections
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=5 \
+  CMD pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" || exit 1
+
+EXPOSE 5432
