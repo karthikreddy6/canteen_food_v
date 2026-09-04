@@ -101,6 +101,7 @@ class User(Base):
     college_record = relationship("College", foreign_keys=[college_id])
     preferred_canteen = relationship("Canteen", foreign_keys=[preferred_canteen_id])
     registration_otp = relationship("RegistrationOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
+    password_reset_otp = relationship("PasswordResetOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
     points_transactions = relationship("PointsTransaction", back_populates="user", cascade="all, delete-orphan")
 
 
@@ -115,6 +116,20 @@ class RegistrationOtp(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     user = relationship("User", back_populates="registration_otp")
+
+
+class PasswordResetOtp(Base):
+    __tablename__ = "password_reset_otps"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    code_hash = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    reset_token_hash = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    user = relationship("User", back_populates="password_reset_otp")
 
 
 class VendorAccount(Base):

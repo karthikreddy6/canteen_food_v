@@ -107,6 +107,27 @@ def hash_refresh_jti(jti: str) -> str:
     return hashlib.sha256(jti.encode("utf-8")).hexdigest()
 
 
+def create_password_reset_token(user_id: str, token_version: int = 1) -> str:
+    """Short-lived password reset token (15 minutes)."""
+    expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=15)
+    payload = {
+        "sub": user_id,
+        "ver": token_version,
+        "type": "password_reset",
+        "iss": settings.JWT_ISSUER,
+        "exp": expire,
+    }
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm="HS256")
+
+
+def verify_password_reset_token(token: str) -> dict:
+    """Decode and validate a password reset token."""
+    payload = _decode_token(token)
+    if payload.get("type") != "password_reset":
+        raise UnauthenticatedException("Invalid reset token type")
+    return payload
+
+
 # ─── Token Decoding ─────────────────────────────────────────
 
 security_scheme = HTTPBearer(auto_error=False)

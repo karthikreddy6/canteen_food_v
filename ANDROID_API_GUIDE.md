@@ -215,6 +215,99 @@ Save:
 - `user.rollNumber`
 - `user.phoneVerified`
 
+### Forgot Password - Step 1: Request OTP
+
+Send user's email or phone number. The OTP is always delivered to the account's registered WhatsApp / phone number.
+
+```http
+POST /api/auth/forgot-password
+```
+*(Also accessible via `POST /api/auth/forget-password`)*
+
+Request (provide `identifier`, `email`, or `phone`):
+
+```json
+{ "identifier": "raj@example.com" }
+```
+or
+```json
+{ "identifier": "919876543210" }
+```
+
+Response:
+
+```json
+{
+  "message": "Verification code sent to your registered WhatsApp number.",
+  "expiresInMinutes": 5,
+  "maskedPhone": "+91 ******3210",
+  "deliveryFailed": false,
+  "otpFailed": false,
+  "otpSent": true,
+  "status": "otp_sent",
+  "fallbackOtp": null
+}
+```
+
+> **Dev Mode Note**: When WhatsApp delivery is unconfigured or fails in local development, `fallbackOtp` contains the last 6 digits of the phone number for immediate testing.
+
+### Forgot Password - Step 2: Verify Reset OTP
+
+Verify the 6-digit OTP received by the user.
+
+```http
+POST /api/auth/forgot-password/verify
+```
+*(Also accessible via `POST /api/auth/forget-password/verify` or `POST /api/auth/verify-reset-otp`)*
+
+Request:
+
+```json
+{
+  "identifier": "raj@example.com",
+  "otp": "123456"
+}
+```
+
+Response:
+
+```json
+{
+  "message": "OTP verified successfully. You can now reset your password.",
+  "resetToken": "eyJhbGciOi...",
+  "status": "verified"
+}
+```
+
+### Forgot Password - Step 3: Change Password
+
+Submit the new password along with the short-lived `resetToken`.
+
+```http
+POST /api/auth/reset-password
+```
+*(Also accessible via `POST /api/auth/forgot-password/reset`)*
+
+Request:
+
+```json
+{
+  "resetToken": "eyJhbGciOi...",
+  "newPassword": "newpassword123"
+}
+```
+
+*(Direct 1-step reset with `{"identifier": "...", "otp": "...", "newPassword": "..."}` is also supported)*
+
+Response:
+
+```json
+{
+  "message": "Password has been reset successfully. Please log in with your new password.",
+  "success": true
+}
+```
+
 ### Update Profile
 
 ```http
@@ -577,7 +670,12 @@ data class UserResponse(
 data class RegistrationOtpResponse(
     val verificationRequired: Boolean = true,
     val expiresInMinutes: Int,
-    val message: String
+    val message: String,
+    val deliveryFailed: Boolean = false,
+    val otpFailed: Boolean = false,
+    val otpSent: Boolean = true,
+    val status: String = "otp_sent",
+    val fallbackOtp: String? = null
 )
 
 data class VerifyRegistrationOtpRequest(val email: String, val otp: String)

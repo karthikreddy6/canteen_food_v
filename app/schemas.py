@@ -308,6 +308,12 @@ class RegistrationOtpResponse(CamelModel):
     verification_required: bool = True
     expires_in_minutes: int
     message: str
+    delivery_failed: bool = False
+    otp_failed: bool = False
+    otp_sent: bool = True
+    status: str = "otp_sent"
+    fallback_otp: Optional[str] = None
+
 
 
 class VerifyRegistrationOtpRequest(CamelRequestModel):
@@ -318,6 +324,75 @@ class VerifyRegistrationOtpRequest(CamelRequestModel):
 class ResendRegistrationOtpRequest(CamelRequestModel):
     email: str = Field(min_length=5, max_length=254)
     password: str = Field(min_length=1, max_length=128)
+
+
+class ForgotPasswordRequest(CamelRequestModel):
+    """Body for POST /api/auth/forgot-password.
+    User can provide either identifier (email or phone), email, or phone.
+    """
+    identifier: Optional[str] = Field(default=None, max_length=254)
+    email: Optional[str] = Field(default=None, max_length=254)
+    phone: Optional[str] = Field(default=None, max_length=20)
+
+    @model_validator(mode="after")
+    def check_identifier(self):
+        if not (self.identifier or self.email or self.phone):
+            raise ValueError("Please provide an email or phone number")
+        return self
+
+
+class ForgotPasswordOtpResponse(CamelModel):
+    message: str
+    expires_in_minutes: int
+    masked_phone: Optional[str] = None
+    delivery_failed: bool = False
+    otp_failed: bool = False
+    otp_sent: bool = True
+    status: str = "otp_sent"
+    fallback_otp: Optional[str] = None
+
+
+class VerifyResetOtpRequest(CamelRequestModel):
+    """Body for POST /api/auth/forgot-password/verify."""
+    identifier: Optional[str] = Field(default=None, max_length=254)
+    email: Optional[str] = Field(default=None, max_length=254)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    otp: str = Field(min_length=6, max_length=6)
+
+    @model_validator(mode="after")
+    def check_identifier(self):
+        if not (self.identifier or self.email or self.phone):
+            raise ValueError("Please provide an email or phone number")
+        return self
+
+
+class VerifyResetOtpResponse(CamelModel):
+    message: str
+    reset_token: str
+    status: str = "verified"
+
+
+class ResetPasswordRequest(CamelRequestModel):
+    """Body for POST /api/auth/reset-password.
+    Supports resetting via reset_token OR directly via identifier + otp.
+    """
+    reset_token: Optional[str] = None
+    identifier: Optional[str] = Field(default=None, max_length=254)
+    email: Optional[str] = Field(default=None, max_length=254)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    otp: Optional[str] = Field(default=None, min_length=6, max_length=6)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @model_validator(mode="after")
+    def check_auth_method(self):
+        if not self.reset_token and not (self.otp and (self.identifier or self.email or self.phone)):
+            raise ValueError("Either resetToken or (identifier/email/phone and otp) must be provided")
+        return self
+
+
+class ResetPasswordResponse(CamelModel):
+    message: str
+    success: bool = True
 
 
 class UpdateProfileRequest(CamelRequestModel):
