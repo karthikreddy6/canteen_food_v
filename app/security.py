@@ -267,9 +267,13 @@ async def require_app_client(request: HTTPConnection) -> None:
     if not settings.APP_CLIENT_KEY:
         # Guard disabled — development mode
         return
-    # Health check endpoint (/) is used by Docker and load balancers to check liveness
-    if request.url.path == "/":
+    # Health check endpoints and API documentation
+    if request.url.path in {"/", "/docs", "/redoc", "/openapi.json"}:
         return
+    # Container internal loopback requests (e.g. docker healthchecks) with no proxy headers
+    if getattr(request, "client", None) and request.client.host in {"127.0.0.1", "::1"}:
+        if not request.headers.get("cf-connecting-ip") and not request.headers.get("x-forwarded-for"):
+            return
     header_value = request.headers.get(settings.APP_CLIENT_KEY_HEADER) or ""
     if not secrets.compare_digest(header_value, settings.APP_CLIENT_KEY):
         raise UnauthenticatedException(
