@@ -35,6 +35,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/onfood
     volumes:
       - ./logs:/app/logs
+      - ./app/static:/app/app/static
     depends_on:
       db:
         condition: service_healthy
