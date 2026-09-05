@@ -27,21 +27,11 @@ from app.services.pickup import get_next_pickup_number
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
-# ── TEMPORARY CODE: Every user can order ₹250 or below (not above) for a 3-hour period ──
-TEMP_ORDER_LIMIT_ENABLED: bool = True
+# ── TEMPORARY CODE: ₹250 max order cap & 3-hour per-user cooling time ────────
+TEMP_ORDER_RULES_ENABLED: bool = True
 TEMP_ORDER_MAX_AMOUNT: Decimal = Decimal("250.00")
-# Active for 3 hours: from 2026-09-05 14:50:00 IST (09:20:00 UTC) until 17:55:00 IST (12:25:00 UTC)
-TEMP_ORDER_LIMIT_START: datetime = datetime(2026, 9, 5, 9, 20, 0)
-TEMP_ORDER_LIMIT_END: datetime = datetime(2026, 9, 5, 12, 25, 0)
-
-
-def is_temp_order_limit_active(current_time: datetime | None = None) -> bool:
-    """Check if the temporary 3-hour ₹250 order limit is currently in effect."""
-    if not TEMP_ORDER_LIMIT_ENABLED:
-        return False
-    t = current_time or datetime.now(timezone.utc).replace(tzinfo=None)
-    return TEMP_ORDER_LIMIT_START <= t <= TEMP_ORDER_LIMIT_END
-# ───────────────────────────────────────────────────────────────────────────────
+TEMP_ORDER_COOLDOWN_SECONDS: int = 3 * 3600  # 3 hours (10,800 seconds) between orders
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 def order_json(order: Order) -> dict:
@@ -222,10 +212,25 @@ async def create_order(
     if user.last_order_at:
         last_order_at = user.last_order_at.replace(tzinfo=None)
         elapsed = (now - last_order_at).total_seconds()
-        if elapsed < app_settings.ORDER_COOLDOWN_SECONDS:
-            remaining = max(1, int(app_settings.ORDER_COOLDOWN_SECONDS - elapsed))
+        cooldown = (
+            TEMP_ORDER_COOLDOWN_SECONDS
+            if TEMP_ORDER_RULES_ENABLED
+            else app_settings.ORDER_COOLDOWN_SECONDS
+        )
+        if elapsed < cooldown:
+            remaining_seconds = max(1, int(cooldown - elapsed))
+            hours = remaining_seconds // 3600
+            minutes = (remaining_seconds % 3600) // 60
+            seconds = remaining_seconds % 60
+            if hours > 0:
+                time_str = f"{hours} hour{'s' if hours > 1 else ''} and {minutes} minute{'s' if minutes != 1 else ''}"
+            elif minutes > 0:
+                time_str = f"{minutes} minute{'s' if minutes != 1 else ''}"
+            else:
+                time_str = f"{seconds} second{'s' if seconds != 1 else ''}"
             raise BadRequestException(
-                f"Please wait {remaining} seconds before placing another order."
+                f"Order cooldown in effect: You must wait 3 hours between orders. "
+                f"Please wait {time_str} before placing another order."
             )
 
     # 2. Check kitchen is accepting orders
@@ -369,15 +374,14 @@ async def create_order(
             f"Expected: {server_total}, received: {client_total}"
         )
 
-    # ── TEMPORARY CODE: Every user can order ₹250 or below (not above) for 3 hours ──
-    if is_temp_order_limit_active(now):
-        if server_total > TEMP_ORDER_MAX_AMOUNT:
-            raise BadRequestException(
-                f"Temporary order limit in effect: Orders must be ₹{TEMP_ORDER_MAX_AMOUNT} or below. "
-                f"Orders above ₹{TEMP_ORDER_MAX_AMOUNT} are blocked during this 3-hour period. "
-                f"(Your order total: ₹{server_total})"
-            )
-    # ───────────────────────────────────────────────────────────────────────────────
+    # ── TEMPORARY CODE: Every user can order ₹250 or below (not above) ──────────
+    if TEMP_ORDER_RULES_ENABLED and server_total > TEMP_ORDER_MAX_AMOUNT:
+        raise BadRequestException(
+            f"Temporary order limit in effect: Orders must be ₹{TEMP_ORDER_MAX_AMOUNT} or below. "
+            f"Orders above ₹{TEMP_ORDER_MAX_AMOUNT} are blocked. "
+            f"(Your order total: ₹{server_total})"
+        )
+    # ─────────────────────────────────────────────────────────────────────────────
 
     # 7. Verify and handle Scheduling
     scheduled_dt = None
