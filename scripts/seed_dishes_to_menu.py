@@ -10,8 +10,13 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from sqlalchemy import select, text
-from app.database import AsyncSessionLocal, engine
+from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from app.config import settings
 from app.models import Canteen, Category, MenuItem, College, college_canteens
+
+script_engine = create_async_engine(settings.DATABASE_URL, poolclass=NullPool)
+ScriptSession = async_sessionmaker(bind=script_engine, class_=AsyncSession, expire_on_commit=False)
 
 JSON_PATH = BASE_DIR / "app" / "static" / "images" / "indian_dishes_images.json"
 SQL_OUTPUT_PATH = BASE_DIR / "scripts" / "insert_dishes_into_menu_items.sql"
@@ -45,7 +50,7 @@ async def seed_dishes_to_menu():
     total_dishes = len(dishes)
     print(f"Loaded {total_dishes} dishes from {JSON_PATH.name}")
 
-    async with AsyncSessionLocal() as db:
+    async with ScriptSession() as db:
         # 1. Fetch or create active canteens
         result = await db.execute(select(Canteen).where(Canteen.is_active == True).order_by(Canteen.name))
         canteens = list(result.scalars().all())
@@ -142,11 +147,12 @@ async def seed_dishes_to_menu():
                 existing_items[key] = menu_item
 
         await db.commit()
-        print("\n Seeding completed successfully!")
-        print(f"Total categories present: {len(categories_by_name)}")
-        print("Dishes distributed per canteen:")
-        for c_name, count in canteen_counts.items():
-            print(f"  - {c_name}: {count} dishes")
+    await script_engine.dispose()
+    print("\n Seeding completed successfully!")
+    print(f"Total categories present: {len(categories_by_name)}")
+    print("Dishes distributed per canteen:")
+    for c_name, count in canteen_counts.items():
+        print(f"  - {c_name}: {count} dishes")
 
 def generate_menu_items_sql():
     with open(JSON_PATH, "r", encoding="utf-8-sig") as f:
