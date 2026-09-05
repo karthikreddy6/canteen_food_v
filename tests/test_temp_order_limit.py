@@ -103,6 +103,7 @@ async def test_create_order_temp_limit_rejects_above_250():
 
         assert "Temporary order limit" in exc_info.value.message
         assert "250.00" in exc_info.value.message
+        assert "blocked" in exc_info.value.message
 
 
 @pytest.mark.asyncio

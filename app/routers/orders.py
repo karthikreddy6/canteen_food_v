@@ -371,10 +371,11 @@ async def create_order(
 
     # ── TEMPORARY CODE: Every user can order ₹250 or below (not above) for 3 hours ──
     if is_temp_order_limit_active(now):
-        if server_total > TEMP_ORDER_MAX_AMOUNT or calculated_total > TEMP_ORDER_MAX_AMOUNT:
+        if server_total > TEMP_ORDER_MAX_AMOUNT:
             raise BadRequestException(
-                f"Temporary order limit in effect: Every user can order ₹{TEMP_ORDER_MAX_AMOUNT} or below (orders above ₹{TEMP_ORDER_MAX_AMOUNT} are not allowed during this 3-hour period). "
-                f"Your order total is ₹{server_total}."
+                f"Temporary order limit in effect: Orders must be ₹{TEMP_ORDER_MAX_AMOUNT} or below. "
+                f"Orders above ₹{TEMP_ORDER_MAX_AMOUNT} are blocked during this 3-hour period. "
+                f"(Your order total: ₹{server_total})"
             )
     # ───────────────────────────────────────────────────────────────────────────────
 
