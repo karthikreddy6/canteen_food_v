@@ -27,6 +27,22 @@ from app.services.pickup import get_next_pickup_number
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
+# ── TEMPORARY CODE: Every user can order ₹250 or below (not above) for a 3-hour period ──
+TEMP_ORDER_LIMIT_ENABLED: bool = True
+TEMP_ORDER_MAX_AMOUNT: Decimal = Decimal("250.00")
+# Active for 3 hours: from 2026-09-05 14:50:00 IST (09:20:00 UTC) until 17:55:00 IST (12:25:00 UTC)
+TEMP_ORDER_LIMIT_START: datetime = datetime(2026, 9, 5, 9, 20, 0)
+TEMP_ORDER_LIMIT_END: datetime = datetime(2026, 9, 5, 12, 25, 0)
+
+
+def is_temp_order_limit_active(current_time: datetime | None = None) -> bool:
+    """Check if the temporary 3-hour ₹250 order limit is currently in effect."""
+    if not TEMP_ORDER_LIMIT_ENABLED:
+        return False
+    t = current_time or datetime.now(timezone.utc).replace(tzinfo=None)
+    return TEMP_ORDER_LIMIT_START <= t <= TEMP_ORDER_LIMIT_END
+# ───────────────────────────────────────────────────────────────────────────────
+
 
 def order_json(order: Order) -> dict:
     items_summary = ", ".join(
@@ -352,6 +368,15 @@ async def create_order(
             f"Order total does not match menu prices. "
             f"Expected: {server_total}, received: {client_total}"
         )
+
+    # ── TEMPORARY CODE: Every user can order ₹250 or below (not above) for 3 hours ──
+    if is_temp_order_limit_active(now):
+        if server_total > TEMP_ORDER_MAX_AMOUNT or calculated_total > TEMP_ORDER_MAX_AMOUNT:
+            raise BadRequestException(
+                f"Temporary order limit in effect: Every user can order ₹{TEMP_ORDER_MAX_AMOUNT} or below (orders above ₹{TEMP_ORDER_MAX_AMOUNT} are not allowed during this 3-hour period). "
+                f"Your order total is ₹{server_total}."
+            )
+    # ───────────────────────────────────────────────────────────────────────────────
 
     # 7. Verify and handle Scheduling
     scheduled_dt = None
