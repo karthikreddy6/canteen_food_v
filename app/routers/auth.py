@@ -74,6 +74,9 @@ async def send_registration_otp(phone: str, code: str) -> bool:
             )
             response.raise_for_status()
             return True
+    except httpx.HTTPStatusError as exc:
+        logging.error(f"[DEV MODE] Failed to send WhatsApp verification code to {phone}: {exc} (Response: {exc.response.text}). OTP was: {code}")
+        return False
     except httpx.HTTPError as exc:
         logging.error(f"[DEV MODE] Failed to send WhatsApp verification code to {phone}: {exc}. OTP was: {code}")
         return False
