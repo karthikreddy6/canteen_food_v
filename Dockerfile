@@ -24,8 +24,14 @@ COPY . .
 # Create logs directory
 RUN mkdir -p /app/logs
 
+# Create a non-root user for security
+RUN groupadd -r onfood && useradd -r -g onfood -d /app -s /sbin/nologin onfood \
+    && chown -R onfood:onfood /app
+
+USER onfood
+
 # Expose server port
 EXPOSE 8000
 
-# Run init_db and start FastAPI server
-CMD ["sh", "-c", "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Production: Gunicorn with Uvicorn workers
+CMD ["sh", "-c", "python init_db.py && gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-4} --timeout 120 --graceful-timeout 30 --access-logfile - --error-logfile -"]

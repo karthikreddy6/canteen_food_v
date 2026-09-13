@@ -7,18 +7,23 @@ services:
     container_name: onfood-postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: BUVVA
+      POSTGRES_PASSWORD: BUVA@KR
       POSTGRES_DB: onfood
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d onfood"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U BUVVA -d onfood"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   backend:
     build:
@@ -32,7 +37,10 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/onfood
+      - DATABASE_URL=postgresql+asyncpg://BUVVA:BUVA%40KR@db:5432/onfood
+      - ENVIRONMENT=production
+      - ENABLE_DOCS=false
+      - WEB_CONCURRENCY=4
     volumes:
       - ./logs:/app/logs
       - ./app/static:/app/app/static
@@ -41,6 +49,16 @@ services:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
 volumes:
   postgres_data:
