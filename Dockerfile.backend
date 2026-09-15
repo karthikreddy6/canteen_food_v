@@ -5,11 +5,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (gosu for dropping privileges)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     curl \
+    gosu \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -28,11 +29,11 @@ RUN mkdir -p /app/logs
 RUN groupadd -r onfood && useradd -r -g onfood -d /app -s /sbin/nologin onfood \
     && chown -R onfood:onfood /app
 
-USER onfood
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
 
 # Expose server port
 EXPOSE 8000
 
-# Production: Gunicorn with Uvicorn workers for process management & graceful restarts
-# Workers = 2 * CPU + 1 (default 4 for a 2-core server). Adjust WEB_CONCURRENCY env var as needed.
-CMD ["sh", "-c", "python init_db.py && gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --workers ${WEB_CONCURRENCY:-4} --timeout 120 --graceful-timeout 30 --access-logfile - --error-logfile -"]
+# Entrypoint fixes volume permissions then drops to onfood user
+ENTRYPOINT ["/app/entrypoint.sh"]
