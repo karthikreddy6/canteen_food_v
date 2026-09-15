@@ -50,24 +50,39 @@ async def check_and_create_fresh():
         
     engine = create_async_engine(db_url)
     
-    # Check if 'users' table exists
     async with engine.connect() as conn:
+        # Check if 'users' table exists
         result = await conn.execute(text(
             "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users');"
         ))
         users_table_exists = result.scalar()
         
-    is_fresh = False
+        # Check if alembic_version table exists and has a revision
+        result = await conn.execute(text(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'alembic_version');"
+        ))
+        alembic_table_exists = result.scalar()
+        
+        has_alembic_revision = False
+        if alembic_table_exists:
+            result = await conn.execute(text("SELECT COUNT(*) FROM alembic_version;"))
+            has_alembic_revision = result.scalar() > 0
+        
+    # Determine state: fresh, needs_stamp, or existing
+    state = "existing"
     if not users_table_exists:
-        is_fresh = True
+        state = "fresh"
         print("Fresh database detected. Creating all tables from SQLAlchemy models...")
         async with engine.begin() as conn:
             import app.models
             await conn.run_sync(Base.metadata.create_all)
         print("Tables created successfully.")
+    elif not has_alembic_revision:
+        state = "needs_stamp"
+        print("Tables exist but Alembic tracking is missing. Will stamp head.")
         
     await engine.dispose()
-    return is_fresh
+    return state
 
 def main():
     print("Connecting to database server...")
@@ -77,7 +92,7 @@ def main():
     try:
         loop.run_until_complete(ensure_db_exists())
         # 2. Check tables and create fresh if needed
-        is_fresh = loop.run_until_complete(check_and_create_fresh())
+        state = loop.run_until_complete(check_and_create_fresh())
     finally:
         loop.close()
         
@@ -90,7 +105,7 @@ def main():
     # Escape '%' for configparser (it treats % as interpolation syntax)
     alembic_cfg.set_main_option("sqlalchemy.url", db_url.replace("%", "%%"))
     
-    if is_fresh:
+    if state in ("fresh", "needs_stamp"):
         print("Stamping database with latest Alembic revision (stamp head)...")
         command.stamp(alembic_cfg, "head")
         print("Alembic stamped successfully.")
