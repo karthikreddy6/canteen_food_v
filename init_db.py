@@ -87,7 +87,8 @@ def main():
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
         
     alembic_cfg = Config("alembic.ini")
-    alembic_cfg.set_main_option("sqlalchemy.url", db_url)
+    # Escape '%' for configparser (it treats % as interpolation syntax)
+    alembic_cfg.set_main_option("sqlalchemy.url", db_url.replace("%", "%%"))
     
     if is_fresh:
         print("Stamping database with latest Alembic revision (stamp head)...")
