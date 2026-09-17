@@ -27,12 +27,6 @@ from app.services.pickup import get_next_pickup_number
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
-# ── TEMPORARY CODE: ₹250 max order cap & 3-hour per-user cooling time ────────
-TEMP_ORDER_RULES_ENABLED: bool = True
-TEMP_ORDER_MAX_AMOUNT: Decimal = Decimal("250.00")
-TEMP_ORDER_COOLDOWN_SECONDS: int = 3 * 3600  # 3 hours (10,800 seconds) between orders
-# ─────────────────────────────────────────────────────────────────────────────
-
 
 def order_json(order: Order) -> dict:
     items_summary = ", ".join(
@@ -212,25 +206,10 @@ async def create_order(
     if user.last_order_at:
         last_order_at = user.last_order_at.replace(tzinfo=None)
         elapsed = (now - last_order_at).total_seconds()
-        cooldown = (
-            TEMP_ORDER_COOLDOWN_SECONDS
-            if TEMP_ORDER_RULES_ENABLED
-            else app_settings.ORDER_COOLDOWN_SECONDS
-        )
-        if elapsed < cooldown:
-            remaining_seconds = max(1, int(cooldown - elapsed))
-            hours = remaining_seconds // 3600
-            minutes = (remaining_seconds % 3600) // 60
-            seconds = remaining_seconds % 60
-            if hours > 0:
-                time_str = f"{hours} hour{'s' if hours > 1 else ''} and {minutes} minute{'s' if minutes != 1 else ''}"
-            elif minutes > 0:
-                time_str = f"{minutes} minute{'s' if minutes != 1 else ''}"
-            else:
-                time_str = f"{seconds} second{'s' if seconds != 1 else ''}"
+        if elapsed < app_settings.ORDER_COOLDOWN_SECONDS:
+            remaining = max(1, int(app_settings.ORDER_COOLDOWN_SECONDS - elapsed))
             raise BadRequestException(
-                f"Order cooldown in effect: You must wait 3 hours between orders. "
-                f"Please wait {time_str} before placing another order."
+                f"Please wait {remaining} seconds before placing another order."
             )
 
     # 2. Check kitchen is accepting orders
@@ -374,15 +353,6 @@ async def create_order(
             f"Expected: {server_total}, received: {client_total}"
         )
 
-    # ── TEMPORARY CODE: Every user can order ₹250 or below (not above) ──────────
-    if TEMP_ORDER_RULES_ENABLED and server_total > TEMP_ORDER_MAX_AMOUNT:
-        raise BadRequestException(
-            f"Temporary order limit in effect: Orders must be ₹{TEMP_ORDER_MAX_AMOUNT} or below. "
-            f"Orders above ₹{TEMP_ORDER_MAX_AMOUNT} are blocked. "
-            f"(Your order total: ₹{server_total})"
-        )
-    # ─────────────────────────────────────────────────────────────────────────────
-
     # 7. Verify and handle Scheduling
     scheduled_dt = None
     order_status = OrderStatus.PLACED
@@ -436,10 +406,6 @@ async def create_order(
             minutes=base_prep + queue_buffer
         )
 
-    # ── TEMPORARY CODE: Any order placed is directly delivered ──────────────
-    order_status = OrderStatus.DELIVERED
-    # ───────────────────────────────────────────────────────────────────────────
-
     # 8. Get pickup number
     pickup_num, pickup_dt = await get_next_pickup_number(db)
 
@@ -458,7 +424,7 @@ async def create_order(
                      if user.use_roll_number_as_order_token and user.roll_number
                      else str(pickup_num)),
         estimated_ready_at=scheduled_dt,
-        actual_ready_at=datetime.now(timezone.utc).replace(tzinfo=None) if order_status == OrderStatus.DELIVERED else None,
+        actual_ready_at=None,
         scheduled_date=request.scheduled_date,
         scheduled_slot_id=request.scheduled_slot_id,
         notes=request.notes,
@@ -509,21 +475,8 @@ async def create_order(
         from app.pubsub import event_bridge
         payload = order_json(saved_order)
         await event_bridge.notify("order_created", payload)
-        if saved_order.status == OrderStatus.DELIVERED:
-            await event_bridge.notify("order_status_updated", payload)
     except Exception as e:
         print(f"[SSE Error] Failed to broadcast new order to vendor: {e}")
-
-    # Broadcast DELIVERED status to user via SSE
-    if saved_order.status == OrderStatus.DELIVERED:
-        await sse_manager.broadcast_to_user(saved_order.user_id, "order-status", {
-            "orderId": str(saved_order.id),
-            "userId": saved_order.user_id,
-            "status": OrderStatus.DELIVERED.value,
-            "pickupNumber": saved_order.pickup_number,
-            "estimatedReadyAt": saved_order.estimated_ready_at.isoformat() if saved_order.estimated_ready_at else None,
-            "updatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-        })
 
     # 12. Auto-accept is controlled per canteen. When disabled (the default),
     # the order stays PLACED until the vendor accepts it.
