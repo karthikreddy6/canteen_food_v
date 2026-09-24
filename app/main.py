@@ -14,9 +14,15 @@ from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.database import AsyncSessionLocal
-from app.exceptions import register_exception_handlers
+from app.exceptions import register_exception_handlers, make_spring_error_response
 from app.models import User, MenuItem, Category, KitchenSettings, FaqCategory, FaqItem, TimeSlot, VendorAccount, College, Canteen, Banner, college_canteens
-from app.security import hash_password, require_app_client, get_client_ip
+from app.security import (
+    hash_password,
+    require_app_client,
+    get_client_ip,
+    is_static_media_path,
+    verify_static_media_request,
+)
 from app.routers import menu, orders, auth, cart, kitchen, help as help_router, promotions, locations, rewards
 from app.config import settings as app_config
 
@@ -31,9 +37,12 @@ response_logger = logging.getLogger("onfood.response")
 
 # Redact these key names wherever they appear in logged request/response bodies
 # or query parameters so tokens and credentials never reach log files.
-_SENSITIVE_KEYS = {"password", "otp", "token", "access_token", "authorization", "hashed_password"}
-# Query parameter names whose values should be redacted (e.g. ?token=<JWT> for SSE clients)
-_SENSITIVE_QUERY_PARAMS = {"token", "access_token"}
+_SENSITIVE_KEYS = {
+    "password", "otp", "token", "access_token", "authorization",
+    "hashed_password", "key", "app_key", "x-app-key", "appkey",
+}
+# Query parameter names whose values should be redacted (e.g. ?token=<JWT> for SSE clients, ?key= for static media)
+_SENSITIVE_QUERY_PARAMS = {"token", "access_token", "key", "app_key", "x-app-key", "appkey"}
 
 for _logger, _filename in ((request_logger, "request.log"), (response_logger, "response.log")):
     if not _logger.handlers:
@@ -140,7 +149,7 @@ app.add_middleware(GZipMiddleware, minimum_size=500)
 
 
 # ─── Dev middleware helpers ──────────────────────
-_SKIP_LOG_PREFIXES = ("/icons/", "/images/", "/sounds/", "/favicon")
+_SKIP_LOG_PREFIXES = ("/icons/", "/images/", "/sounds/", "/favicon", "/icons", "/images", "/sounds")
 
 # ANSI colors for terminal
 _C = {
@@ -217,8 +226,15 @@ async def dev_request_logger(request: Request, call_next):
             flush=True
         )
 
-    # ── Call actual endpoint ──
-    response = await call_next(request)
+    # ── Call actual endpoint (with static media authorization guard) ──
+    if request.method != "OPTIONS" and is_static_media_path(path) and not verify_static_media_request(request):
+        response = make_spring_error_response(
+            status_code=401,
+            error_name="Unauthorized",
+            message="Missing or invalid app client key. Access is restricted to the official app.",
+        )
+    else:
+        response = await call_next(request)
 
     duration_ms = round((time.perf_counter() - started) * 1000, 2)
 
@@ -238,7 +254,7 @@ async def dev_request_logger(request: Request, call_next):
     is_streaming = "text/event-stream" in content_type or "multipart/" in content_type
 
     response_body = None
-    if not is_streaming and hasattr(response, "body_iterator"):
+    if not skip and not is_streaming and hasattr(response, "body_iterator"):
         chunks = []
         async for chunk in response.body_iterator:
             chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))

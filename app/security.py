@@ -253,11 +253,52 @@ async def get_current_vendor(
 
 # ─── App-Client Identity Guard ───────────────────────────────
 
+STATIC_MEDIA_PREFIXES = ("/icons", "/images", "/sounds")
+
+
+def is_static_media_path(path: str) -> bool:
+    """Check if the requested path corresponds to protected static media assets."""
+    for prefix in STATIC_MEDIA_PREFIXES:
+        if path == prefix or path.startswith(prefix + "/"):
+            return True
+    return False
+
+
+def verify_app_client_key_value(key: str | None) -> bool:
+    """Check if provided key matches settings.APP_CLIENT_KEY using constant-time comparison."""
+    if not settings.APP_CLIENT_KEY:
+        return True
+    if not key:
+        return False
+    return secrets.compare_digest(key, settings.APP_CLIENT_KEY)
+
+
+def extract_app_client_key(conn: HTTPConnection) -> str | None:
+    """
+    Extract app client key from header or common query parameters.
+    Checks:
+    - Header: settings.APP_CLIENT_KEY_HEADER (e.g. X-App-Key)
+    - Query params: key, app_key, x-app-key, appKey (common in media/image loaders)
+    """
+    # 1. Header (case-insensitive in Starlette)
+    header_val = conn.headers.get(settings.APP_CLIENT_KEY_HEADER)
+    if header_val:
+        return header_val.strip()
+
+    # 2. Query parameter fallback
+    for q_param in ("key", "app_key", "x-app-key", "appKey"):
+        param_val = conn.query_params.get(q_param)
+        if param_val:
+            return param_val.strip()
+
+    return None
+
+
 async def require_app_client(request: HTTPConnection) -> None:
     """
     Global dependency — applied to every route via FastAPI(dependencies=[...]).
 
-    Rejects any request that does not carry the correct X-App-Key header.
+    Rejects any request that does not carry the correct X-App-Key header or key query param.
     This stops casual browser, curl, and Postman access.
 
     Supports both standard HTTP Request and WebSocket connections via HTTPConnection.
@@ -270,11 +311,22 @@ async def require_app_client(request: HTTPConnection) -> None:
     # Health check endpoint (/) is used by Docker and load balancers to check liveness
     if request.url.path == "/":
         return
-    header_value = request.headers.get(settings.APP_CLIENT_KEY_HEADER) or ""
-    if not secrets.compare_digest(header_value, settings.APP_CLIENT_KEY):
+    key = extract_app_client_key(request)
+    if not verify_app_client_key_value(key):
         raise UnauthenticatedException(
             "Missing or invalid app client key. This API is only accessible from the official app."
         )
+
+
+def verify_static_media_request(request: Request) -> bool:
+    """
+    Validates static media requests against APP_CLIENT_KEY.
+    Returns True if allowed, False if unauthorized.
+    """
+    if not settings.APP_CLIENT_KEY:
+        return True
+    key = extract_app_client_key(request)
+    return verify_app_client_key_value(key)
 
 
 # ─── Helpers ─────────────────────────────────────────────────
