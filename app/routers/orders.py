@@ -24,6 +24,7 @@ from app.exceptions import NotFoundException, BadRequestException
 from app.sse import sse_manager
 from app.services.eta import get_kitchen_settings, count_active_orders
 from app.services.pickup import get_next_pickup_number
+from app.college_scoping import get_user_college_info
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
@@ -284,6 +285,9 @@ async def create_order(
     real_canteen_ids = {cid for cid in canteen_ids if cid is not None}
     if len(real_canteen_ids) > 1:
         raise BadRequestException("An order can only contain items from one canteen at a time.")
+    has_college, _, allowed_canteen_ids, _ = await get_user_college_info(db, user)
+    if has_college and (not allowed_canteen_ids or any(cid not in allowed_canteen_ids for cid in real_canteen_ids)):
+        raise BadRequestException("You can only order items from your college canteens.")
     # Auto-assign canteen: from items if set, otherwise from user's preferred canteen
     order_canteen_id = real_canteen_ids.pop() if real_canteen_ids else user.preferred_canteen_id
 

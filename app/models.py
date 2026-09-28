@@ -103,6 +103,7 @@ class User(Base):
     registration_otp = relationship("RegistrationOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
     password_reset_otp = relationship("PasswordResetOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
     points_transactions = relationship("PointsTransaction", back_populates="user", cascade="all, delete-orphan")
+    fcm_tokens = relationship("UserFcmToken", back_populates="user", cascade="all, delete-orphan")
 
 
 class RegistrationOtp(Base):
@@ -467,3 +468,21 @@ class BrandCoupon(Base):
     claimed_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True, server_default="true")
     created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+
+# ─────────────────────────────────────────────
+# FCM Device Tokens (1 User -> Multiple Devices)
+# ─────────────────────────────────────────────
+
+class UserFcmToken(Base):
+    __tablename__ = "user_fcm_tokens"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    fcm_token = Column(Text, nullable=False, unique=True, index=True)
+    device_name = Column(String(100), nullable=True, default="Android Device")
+    platform = Column(String(20), nullable=False, default="android")
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="fcm_tokens")

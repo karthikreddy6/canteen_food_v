@@ -4,13 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.database import get_db
-from app.models import CartItem, MenuItem
+from app.models import CartItem, MenuItem, User
 from app.schemas import (
     CartResponse, CartItemResponse, AddToCartRequest, BulkReplaceCartRequest,
     UpdateCartItemRequest, CartValidateResponse, CartValidateIssue
 )
 from app.security import get_current_user_id_verified as get_current_user_id
 from app.exceptions import NotFoundException, BadRequestException
+from app.college_scoping import get_user_college_info
 
 router = APIRouter(prefix="/api/cart", tags=["Cart"])
 
@@ -73,6 +74,11 @@ async def add_to_cart(
         raise NotFoundException(f"Menu item not found: {request.menu_item_id}")
     if not menu_item.is_available:
         raise BadRequestException(f"'{menu_item.name}' is currently not available")
+
+    user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    has_college, _, allowed_canteen_ids, _ = await get_user_college_info(db, user)
+    if has_college and (not allowed_canteen_ids or menu_item.canteen_id not in allowed_canteen_ids):
+        raise BadRequestException("You can only add items from your college canteens to your cart")
 
     existing_canteens = await db.execute(select(CartItem.canteen_id).where(CartItem.user_id == user_id).limit(1))
     existing_canteen = existing_canteens.scalar_one_or_none()
@@ -185,6 +191,9 @@ async def replace_cart(
         await db.delete(ci)
     await db.flush()
 
+    user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    has_college, _, allowed_canteen_ids, _ = await get_user_college_info(db, user)
+
     canteen_ids = set()
     for item_req in request.items:
         menu_result = await db.execute(select(MenuItem).where(MenuItem.id == item_req.menu_item_id))
@@ -193,6 +202,8 @@ async def replace_cart(
             raise NotFoundException(f"Menu item not found: {item_req.menu_item_id}")
         if not menu_item.is_available:
             raise BadRequestException(f"'{menu_item.name}' is currently not available")
+        if has_college and (not allowed_canteen_ids or menu_item.canteen_id not in allowed_canteen_ids):
+            raise BadRequestException("You can only add items from your college canteens to your cart")
         canteen_ids.add(menu_item.canteen_id)
         db.add(CartItem(
             user_id=user_id,

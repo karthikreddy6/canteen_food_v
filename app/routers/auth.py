@@ -2,15 +2,18 @@ import datetime
 import hashlib
 import secrets
 import logging
+from typing import Optional, List
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+
 from app.database import get_db
 from app.config import settings
-from app.models import User, College, Canteen, RegistrationOtp, PasswordResetOtp
+from app.models import User, College, Canteen, RegistrationOtp, PasswordResetOtp, UserFcmToken
 from app.schemas import (
     RegisterRequest, UserResponse, LoginRequest, LoginResponse, UpdateProfileRequest,
     RegistrationOtpResponse, VerifyRegistrationOtpRequest, ResendRegistrationOtpRequest,
@@ -18,6 +21,7 @@ from app.schemas import (
     ForgotPasswordRequest, ForgotPasswordOtpResponse,
     VerifyResetOtpRequest, VerifyResetOtpResponse,
     ResetPasswordRequest, ResetPasswordResponse,
+    DeviceTokenRequest, DeviceTokenResponse,
 )
 from app.security import (
     hash_password, verify_password, verify_password_async,
@@ -33,6 +37,7 @@ from app.security_rules import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+logger = logging.getLogger("onfood.auth")
 
 
 # ─── Internal Helpers ──────────────────────────────────────
@@ -139,6 +144,18 @@ def mask_phone(phone: str) -> str:
     return f"{prefix} ******{last_four}".strip()
 
 
+def mask_email(email: str) -> str:
+    """Mask email for safe display, e.g. 'karthik@gmail.com' -> 'ka****ik@gmail.com'."""
+    if "@" not in email:
+        return "****"
+    local, domain = email.rsplit("@", 1)
+    if len(local) <= 2:
+        masked_local = local[0] + "****"
+    else:
+        masked_local = local[:2] + "****" + local[-2:]
+    return f"{masked_local}@{domain}"
+
+
 async def find_user_by_identifier(db: AsyncSession, identifier: str) -> User | None:
     """Find a user by email or phone number."""
     cleaned = identifier.strip()
@@ -164,26 +181,42 @@ async def find_user_by_identifier(db: AsyncSession, identifier: str) -> User | N
 
 
 async def create_and_send_reset_otp(user: User, db: AsyncSession) -> tuple[bool, str, str | None]:
-    if not user.phone:
-        raise BadRequestException("No registered phone number found for this account. Please contact support.")
-
-    await throttle_otp_per_phone(user.phone)
-
-    digits_only = "".join(char for char in (user.phone or "") if char.isdigit())
-    last_six = digits_only[-6:] if len(digits_only) >= 6 else None
+    if not user.email:
+        raise BadRequestException("No registered email found for this account. Please contact support.")
 
     random_code = f"{secrets.randbelow(1_000_000):06d}"
 
-    sent = await send_registration_otp(user.phone, random_code)
+    # Send OTP via email
+    from app.email import send_email
+    sent = await send_email(
+        to=user.email,
+        subject=f"OnFood Password Reset Code: {random_code}",
+        body=(
+            f"<div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;'>"
+            f"<h2 style='color: #333;'>Password Reset</h2>"
+            f"<p>Hi <b>{user.name or 'there'}</b>,</p>"
+            f"<p>Your password reset verification code is:</p>"
+            f"<div style='background: #f5f5f5; padding: 20px; text-align: center; "
+            f"border-radius: 8px; margin: 16px 0;'>"
+            f"<span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333;'>"
+            f"{random_code}</span></div>"
+            f"<p>This code expires in <b>{settings.OTP_EXPIRY_MINUTES} minutes</b>.</p>"
+            f"<p>If you did not request this, please ignore this email.</p>"
+            f"<hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'>"
+            f"<p style='color: #999; font-size: 12px;'>OnFood - Campus Food Ordering</p>"
+            f"</div>"
+        ),
+        html=True,
+    )
 
     if sent:
         otp_code = random_code
         fallback_otp = None
-        message = "Verification code sent to your registered WhatsApp number."
+        message = "Verification code sent to your registered email address."
     else:
-        otp_code = last_six or random_code
+        otp_code = random_code
         fallback_otp = otp_code
-        message = "Failed to send verification code. Your OTP is the last 6 digits of your phone number."
+        message = "Failed to send verification code via email. Please try again later."
 
     existing = (await db.execute(
         select(PasswordResetOtp).where(PasswordResetOtp.user_id == user.id)
@@ -389,6 +422,18 @@ async def login(request: LoginRequest, http_request: Request, db: AsyncSession =
     await db.commit()
     await db.refresh(user)
 
+    if request.fcm_token:
+        try:
+            await record_user_device_token(
+                db=db,
+                user_id=user.id,
+                fcm_token=request.fcm_token,
+                device_name=request.device_name,
+                platform=request.platform,
+            )
+        except Exception as fcm_err:
+            logger.warning(f"[Login FCM] Could not register token during login: {fcm_err}")
+
     return LoginResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -547,7 +592,7 @@ async def forgot_password(
 ):
     """
     Initiate password reset: accepts email or phone number,
-    looks up account, and sends a 6-digit OTP to user's registered WhatsApp/phone number.
+    looks up account, and sends a 6-digit OTP to user's registered email address.
     """
     client_ip = get_client_ip(http_request)
     await rate_limit_login(client_ip)
@@ -560,14 +605,15 @@ async def forgot_password(
     if getattr(user, "status", "active") == "hold":
         raise BadRequestException("This account is currently on hold. Please contact support.")
 
-    if not user.phone_verified:
-        raise BadRequestException("This account has not been verified yet. Please complete registration verification.")
+    if not user.email:
+        raise BadRequestException("No email address registered for this account. Please contact support.")
 
     sent, message, fallback_otp = await create_and_send_reset_otp(user, db)
 
     return ForgotPasswordOtpResponse(
         message=message,
         expires_in_minutes=settings.OTP_EXPIRY_MINUTES,
+        masked_email=mask_email(user.email) if user.email else None,
         masked_phone=mask_phone(user.phone) if user.phone else None,
         delivery_failed=not sent,
         otp_failed=not sent,
@@ -705,3 +751,111 @@ async def reset_password(
         message="Password has been reset successfully. Please log in with your new password.",
         success=True,
     )
+
+
+# ─────────────────────────────────────────────
+# FCM Device Token Management
+# ─────────────────────────────────────────────
+
+async def record_user_device_token(
+    db: AsyncSession,
+    user_id: str,
+    fcm_token: str,
+    device_name: Optional[str] = "Android Device",
+    platform: Optional[str] = "android",
+) -> None:
+    """
+    Registers or updates an FCM token in PostgreSQL and Cloud Firestore.
+    """
+    token = (fcm_token or "").strip()
+    if not token:
+        return
+
+    # 1. Store in PostgreSQL
+    stmt = pg_insert(UserFcmToken).values(
+        user_id=user_id,
+        fcm_token=token,
+        device_name=device_name or "Android Device",
+        platform=platform or "android"
+    ).on_conflict_do_update(
+        index_elements=["fcm_token"],
+        set_={
+            "user_id": user_id,
+            "device_name": device_name or "Android Device",
+            "platform": platform or "android",
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        }
+    )
+    await db.execute(stmt)
+    await db.commit()
+
+    # 2. Store in Cloud Firestore (MongoDB mode or Native mode)
+    try:
+        from app.services.firestore_sync import sync_token_to_firestore
+        await sync_token_to_firestore(
+            user_id=user_id,
+            token=token,
+            device_name=device_name or "Android Device",
+            platform=platform or "android"
+        )
+    except Exception as e:
+        logger.warning(f"[Firestore] Failed to sync token to Firestore: {e}")
+
+
+@router.post("/device-token", response_model=DeviceTokenResponse, status_code=status.HTTP_200_OK)
+async def register_device_token(
+    request: DeviceTokenRequest,
+    user_id: str = Depends(get_current_user_id_verified),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Register or update an FCM device token for the authenticated user.
+    Uses PostgreSQL ON CONFLICT (UPSERT) to ensure one active owner per token.
+    """
+    token = (request.fcm_token or "").strip()
+    if not token:
+        raise BadRequestException("fcmToken cannot be empty")
+
+    await record_user_device_token(
+        db=db,
+        user_id=user_id,
+        fcm_token=token,
+        device_name=request.device_name,
+        platform=request.platform,
+    )
+
+    return DeviceTokenResponse(success=True, message="FCM device token registered in PostgreSQL and Firestore")
+
+
+@router.delete("/device-token", response_model=DeviceTokenResponse, status_code=status.HTTP_200_OK)
+async def unregister_device_token(
+    request: DeviceTokenRequest,
+    user_id: str = Depends(get_current_user_id_verified),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Remove an FCM device token upon user logout from both PostgreSQL and Firestore.
+    """
+    token = (request.fcm_token or "").strip()
+    if token:
+        # 1. Delete from PostgreSQL
+        query = select(UserFcmToken).where(
+            UserFcmToken.fcm_token == token,
+            UserFcmToken.user_id == user_id
+        )
+        result = await db.execute(query)
+        record = result.scalars().first()
+        if record:
+            await db.delete(record)
+            await db.commit()
+
+        # 2. Delete from Cloud Firestore
+        try:
+            from app.services.firestore_sync import remove_token_from_firestore
+            await remove_token_from_firestore(user_id=user_id, token=token)
+        except Exception as e:
+            logger.warning(f"[Firestore] Failed to remove token from Firestore: {e}")
+
+    return DeviceTokenResponse(success=True, message="Device token removed successfully from PostgreSQL and Firestore")
+
+

@@ -16,6 +16,7 @@ from app.schemas import (
 )
 from app.cache import get_json, set_json
 from app.security import get_current_user_id_optional
+from app.college_scoping import resolve_menu_scope, MenuScope, parse_optional_uuid
 
 router = APIRouter(prefix="/api/menu", tags=["Menu"])
 
@@ -42,31 +43,53 @@ def _dedupe_menu_items(items: list[MenuItemResponse]) -> list[MenuItemResponse]:
     return deduped
 
 
-async def _all_cached_menu(db: AsyncSession, canteen_id: Optional[UUID] = None) -> list[MenuItemResponse]:
-    cache_key = f"menu:v3:all:{canteen_id or 'all'}"
+def _get_scope_cache_key(scope: MenuScope) -> str:
+    if scope.canteen_id:
+        return f"canteen:{scope.canteen_id}"
+    if scope.college_id:
+        return f"college:{scope.college_id}"
+    if scope.canteen_ids:
+        sorted_ids = ",".join(sorted(str(i) for i in scope.canteen_ids))
+        return f"canteens:{sorted_ids}"
+    return "all"
+
+
+async def _all_cached_menu(db: AsyncSession, scope: MenuScope) -> list[MenuItemResponse]:
+    if scope.empty:
+        return []
+
+    scope_key = _get_scope_cache_key(scope)
+    cache_key = f"menu:v3:all:{scope_key}"
     cached_items = await get_json(cache_key)
     if cached_items is not None:
         return _dedupe_menu_items(_menu_from_json(cached_items))
-    
+
     stmt = select(MenuItem).join(MenuItem.canteen).where(
         Canteen.is_active == True
     )
-    if canteen_id:
-        stmt = stmt.where(MenuItem.canteen_id == canteen_id)
+    if scope.canteen_id:
+        stmt = stmt.where(MenuItem.canteen_id == scope.canteen_id)
+    elif scope.canteen_ids:
+        stmt = stmt.where(MenuItem.canteen_id.in_(scope.canteen_ids))
     stmt = stmt.order_by(MenuItem.name)
-    
+
     result = await db.execute(stmt)
     items = _dedupe_menu_items([_to_menu_response(i) for i in result.scalars().all()])
     await set_json(cache_key, [item.model_dump(mode="json") for item in items], settings.MENU_CACHE_TTL_SECONDS)
     return items
 
 
-async def _category_item_counts(db: AsyncSession, canteen_id: Optional[UUID] = None) -> dict:
+async def _category_item_counts(db: AsyncSession, scope: MenuScope) -> dict:
+    if scope.empty:
+        return {}
+
     stmt = select(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name).join(MenuItem.canteen).where(
         Canteen.is_active == True
     )
-    if canteen_id:
-        stmt = stmt.where(MenuItem.canteen_id == canteen_id)
+    if scope.canteen_id:
+        stmt = stmt.where(MenuItem.canteen_id == scope.canteen_id)
+    elif scope.canteen_ids:
+        stmt = stmt.where(MenuItem.canteen_id.in_(scope.canteen_ids))
     result = await db.execute(stmt.order_by(MenuItem.category_id, MenuItem.canteen_id, MenuItem.name))
 
     counts: dict = {}
@@ -90,46 +113,18 @@ def _to_utc_naive(value: datetime) -> datetime:
     return value.astimezone(timezone.utc).replace(tzinfo=None)
 
 
-def parse_optional_uuid(val: Optional[str]) -> Optional[UUID]:
-    """Parse string to UUID; returns None if string is empty or None."""
-    if not val or not val.strip():
-        return None
-    try:
-        return UUID(val.strip())
-    except ValueError:
-        return None
-
-
-async def _resolve_canteen_id(
-    db: AsyncSession,
-    canteen_id_param: Optional[str],
-    current_user_id: Optional[str]
-) -> Optional[UUID]:
-    """
-    If canteen_id is explicitly passed in query params, use it.
-    Otherwise, if a user token is present, resolve their preferred_canteen_id!
-    """
-    cid = parse_optional_uuid(canteen_id_param)
-    if cid:
-        return cid
-    if current_user_id:
-        user = (await db.execute(select(User).where(User.id == current_user_id))).scalar_one_or_none()
-        if user and user.preferred_canteen_id:
-            return user.preferred_canteen_id
-    return None
-
-
 # ─── Endpoints ─────────────────────────────────
 
 @router.get("", response_model=List[MenuItemResponse])
 async def get_menu(
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
-    """All available menu items for the user's canteen (or specified canteenId)."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    return await _all_cached_menu(db, cid)
+    """All available menu items for the user's college (or specified canteenId within their college)."""
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    return await _all_cached_menu(db, scope)
 
 
 @router.get("/paged", response_model=MenuPageResponse)
@@ -138,13 +133,22 @@ async def get_menu_paged(
     limit: int = Query(20, ge=1, le=100),
     category_id: Optional[str] = Query(None, alias="categoryId"),
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
     """Paged available menu items for fast first paint and infinite scroll."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    if scope.empty:
+        return MenuPageResponse(
+            items=[],
+            total=0,
+            page=page,
+            limit=limit,
+            has_more=False,
+        )
     cat_id = parse_optional_uuid(category_id)
-    all_items = await _all_cached_menu(db, cid)
+    all_items = await _all_cached_menu(db, scope)
     filtered = [item for item in all_items if not cat_id or item.category_id == cat_id]
     total = len(filtered)
     offset = (page - 1) * limit
@@ -162,16 +166,27 @@ async def get_menu_paged(
 async def sync_menu(
     since: Optional[datetime] = Query(None),
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
     """Return menu/category rows changed since the Android app's last sync."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+
+    if scope.empty:
+        return MenuSyncResponse(
+            categories=[],
+            items=[],
+            server_time=_utc_now_naive(),
+        )
 
     category_query = select(Category)
-    item_query = select(MenuItem)
-    if cid:
-        item_query = item_query.where(MenuItem.canteen_id == cid)
+    item_query = select(MenuItem).join(MenuItem.canteen).where(Canteen.is_active == True)
+    if scope.canteen_id:
+        item_query = item_query.where(MenuItem.canteen_id == scope.canteen_id)
+    elif scope.canteen_ids:
+        item_query = item_query.where(MenuItem.canteen_id.in_(scope.canteen_ids))
+
     if since:
         since = _to_utc_naive(since)
         category_query = category_query.where(Category.updated_at > since)
@@ -179,7 +194,7 @@ async def sync_menu(
 
     category_result = await db.execute(category_query.order_by(Category.display_order))
     item_result = await db.execute(item_query.order_by(MenuItem.name))
-    counts = await _category_item_counts(db, cid)
+    counts = await _category_item_counts(db, scope)
 
     categories = []
     for cat in category_result.scalars().all():
@@ -197,21 +212,36 @@ async def sync_menu(
 @router.get("/categories", response_model=List[CategoryResponse])
 async def get_categories(
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
-    """All active categories with item counts for user's preferred canteen."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    cache_key = f"menu:categories:{cid or 'all'}"
+    """All active categories with item counts for user's college/preferred canteen."""
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    if scope.empty:
+        result = await db.execute(
+            select(Category).where(Category.is_active == True).order_by(Category.display_order)
+        )
+        categories = result.scalars().all()
+        responses = []
+        for cat in categories:
+            r = CategoryResponse.model_validate(cat)
+            r.item_count = 0
+            responses.append(r)
+        return responses
+
+    scope_key = _get_scope_cache_key(scope)
+    cache_key = f"menu:categories:{scope_key}"
     cached_categories = await get_json(cache_key)
     if cached_categories is not None:
         return [CategoryResponse.model_validate(item) for item in cached_categories]
+
     result = await db.execute(
         select(Category).where(Category.is_active == True).order_by(Category.display_order)
     )
     categories = result.scalars().all()
 
-    counts = await _category_item_counts(db, cid)
+    counts = await _category_item_counts(db, scope)
 
     responses = []
     for cat in categories:
@@ -225,15 +255,19 @@ async def get_categories(
 @router.get("/discounts", response_model=List[MenuItemResponse])
 async def get_discount_items(
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
-    """Items with active discounts (discount_percent > 0)."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    cache_key = f"menu:v3:discounts:{cid or 'all'}"
+    """Items with active discounts (discount_percent > 0) scoped to user's college."""
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    if scope.empty:
+        return []
+    scope_key = _get_scope_cache_key(scope)
+    cache_key = f"menu:v3:discounts:{scope_key}"
     cached_items = await get_json(cache_key)
     if cached_items is None:
-        items = [item for item in await _all_cached_menu(db, cid) if item.discount_percent and item.discount_percent > 0]
+        items = [item for item in await _all_cached_menu(db, scope) if item.discount_percent and item.discount_percent > 0]
         items.sort(key=lambda item: item.discount_percent, reverse=True)
         cached_items = [item.model_dump(mode="json") for item in items]
         await set_json(cache_key, cached_items, settings.MENU_CACHE_TTL_SECONDS)
@@ -243,15 +277,19 @@ async def get_discount_items(
 @router.get("/specials", response_model=List[MenuItemResponse])
 async def get_special_menu(
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
-    """Items flagged as special offer."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    cache_key = f"menu:v3:specials:{cid or 'all'}"
+    """Items flagged as special offer scoped to user's college."""
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    if scope.empty:
+        return []
+    scope_key = _get_scope_cache_key(scope)
+    cache_key = f"menu:v3:specials:{scope_key}"
     cached_items = await get_json(cache_key)
     if cached_items is None:
-        items = [item for item in await _all_cached_menu(db, cid) if item.special_offer]
+        items = [item for item in await _all_cached_menu(db, scope) if item.special_offer]
         cached_items = [item.model_dump(mode="json") for item in items]
         await set_json(cache_key, cached_items, settings.MENU_CACHE_TTL_SECONDS)
     return _menu_from_json(cached_items)
@@ -261,22 +299,28 @@ async def get_special_menu(
 async def search_menu(
     q: str = Query(min_length=1),
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
-    """Search menu items by name (case-insensitive)."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
+    """Search menu items by name scoped to user's college."""
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    if scope.empty:
+        return []
     query = q.casefold()
-    return [item for item in await _all_cached_menu(db, cid) if query in item.name.casefold()]
+    return [item for item in await _all_cached_menu(db, scope) if query in item.name.casefold()]
 
 
 @router.get("/category/{category_id}", response_model=List[MenuItemResponse])
 async def get_items_by_category(
     category_id: str,
     canteen_id: Optional[str] = Query(None, alias="canteenId"),
+    college_id: Optional[str] = Query(None, alias="collegeId"),
     db: AsyncSession = Depends(get_db),
-    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional),
 ):
-    """All available items in a specific category."""
-    cid = await _resolve_canteen_id(db, canteen_id, current_user_id)
-    return [item for item in await _all_cached_menu(db, cid) if str(item.category_id) == category_id]
+    """All available items in a specific category scoped to user's college."""
+    scope = await resolve_menu_scope(db, canteen_id, college_id, current_user_id)
+    if scope.empty:
+        return []
+    return [item for item in await _all_cached_menu(db, scope) if str(item.category_id) == category_id]

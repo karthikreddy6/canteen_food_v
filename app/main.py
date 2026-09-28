@@ -116,6 +116,23 @@ async def lifespan(app: FastAPI):
                 await sse_manager.broadcast_to_user(user_id, "order-status", data)
                 await ws_manager.broadcast_to_user(user_id, data)
 
+                # High-Priority FCM Push for Mobile Devices
+                try:
+                    from app.services.fcm import send_order_status_push_async
+                    order_token = str(data.get("token") or data.get("orderToken") or data.get("pickupNumber") or "")
+                    async with AsyncSessionLocal() as session:
+                        await send_order_status_push_async(
+                            db=session,
+                            user_id=user_id,
+                            order_id=str(data.get("id") or data.get("orderId")),
+                            order_token=order_token,
+                            status=str(data.get("status")),
+                            estimated_ready_at=data.get("estimatedReadyAt"),
+                            items_details=data.get("itemsSummary") or data.get("itemsDetails")
+                        )
+                except Exception as fcm_err:
+                    print(f"[FCM Error] Push dispatch failed: {fcm_err}")
+
     await event_bridge.start(handle_incoming_event)
     
     yield

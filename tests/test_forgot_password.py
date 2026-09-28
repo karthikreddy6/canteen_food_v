@@ -151,13 +151,12 @@ async def test_forgot_password_sends_otp_to_registered_phone():
     req_body = ForgotPasswordRequest(email="user@test.com")
 
     with patch("app.routers.auth.rate_limit_login", new=AsyncMock()), \
-         patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
-         patch("app.routers.auth.send_registration_otp", new=AsyncMock(return_value=True)):
+         patch("app.email.send_email", new=AsyncMock(return_value=True)):
         resp = await forgot_password(request=req_body, http_request=mock_req, db=mock_db)
 
     assert resp.otp_sent is True
     assert resp.status == "otp_sent"
-    assert resp.masked_phone == "+91 ******3210"
+    assert resp.masked_email == "us****er@test.com"
     assert resp.fallback_otp is None
     assert mock_db.add.called
     added = mock_db.add.call_args[0][0]
@@ -166,7 +165,7 @@ async def test_forgot_password_sends_otp_to_registered_phone():
 
 
 @pytest.mark.asyncio
-async def test_forgot_password_fallback_in_dev_mode():
+async def test_forgot_password_fallback_when_email_fails():
     user = _make_test_user(email="user@test.com", phone="919876543210")
     mock_db = AsyncMock()
 
@@ -182,15 +181,14 @@ async def test_forgot_password_fallback_in_dev_mode():
 
     req_body = ForgotPasswordRequest(phone="9876543210")
 
-    # When WhatsApp fails, falls back to last 6 digits: 543210
+    # When email sending fails, fallback_otp is returned
     with patch("app.routers.auth.rate_limit_login", new=AsyncMock()), \
-         patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
-         patch("app.routers.auth.send_registration_otp", new=AsyncMock(return_value=False)):
+         patch("app.email.send_email", new=AsyncMock(return_value=False)):
         resp = await forgot_password(request=req_body, http_request=mock_req, db=mock_db)
 
     assert resp.otp_sent is False
     assert resp.status == "otp_failed"
-    assert resp.fallback_otp == "543210"
+    assert resp.fallback_otp is not None  # Random 6-digit code returned as fallback
 
 
 @pytest.mark.asyncio

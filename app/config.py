@@ -75,9 +75,21 @@ class Settings(BaseSettings):
     # router is disabled.
     VENDOR_ENDPOINTS_ENABLED: bool = True
 
+    # ── SMTP Email (Zoho) ─────────────────────────────────────────────────────
+    SMTP_HOST: str = "smtp.zoho.in"
+    SMTP_PORT: int = 587
+    SMTP_EMAIL: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM_NAME: str = "OnFood"
+
+    # ── Firebase Admin SDK (FCM) & Firestore ──────────────────────────────────
+    FIREBASE_CREDENTIALS_PATH: str = "serviceAccountKey.json"
+    FIRESTORE_MONGO_URI: str | None = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()
