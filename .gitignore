@@ -17,6 +17,7 @@ venv.bak/
 !.env.example
 serviceAccountKey.json
 *firebase*.json
+*.pem
 
 # IDE & Editor settings
 .vscode/

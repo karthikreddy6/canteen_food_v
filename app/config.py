@@ -55,6 +55,11 @@ class Settings(BaseSettings):
     # ── Business rules ────────────────────────────────────────────────────────
     ORDER_COOLDOWN_SECONDS: int = 10
 
+    # ── Billing, Taxes & Dynamic Fees ─────────────────────────────────────────
+    GST_PERCENTAGE: float = 5.0
+    PACKAGING_FEE: float = 3.0
+    PLATFORM_FEE: float = 0.0
+
     # ── WhatsApp bot / Support Desk ───────────────────────────────────────────
     WHATSAPP_BOT_URL: str = "http://127.0.0.1:3000"
     WHATSAPP_BOT_INTERNAL_KEY: str | None = None

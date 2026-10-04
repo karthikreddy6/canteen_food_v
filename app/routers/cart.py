@@ -13,6 +13,7 @@ from app.schemas import (
 from app.security import get_current_user_id_verified as get_current_user_id
 from app.exceptions import NotFoundException, BadRequestException
 from app.college_scoping import get_user_college_info
+from app.config import settings
 
 router = APIRouter(prefix="/api/cart", tags=["Cart"])
 
@@ -319,10 +320,14 @@ async def calculate_bill(
                 coupon_discount = round(coupon_discount, 2)
                 applied_coupon_code = code_clean
 
-    # Dynamic fees & taxes
-    packaging_fee = Decimal("3.00") if subtotal > 0 else Decimal("0.00")
-    gst_fee = round(subtotal * Decimal("0.05"), 2) if subtotal > 0 else Decimal("0.00")
-    platform_fee = Decimal("0.00")
+    # Dynamic fees & taxes from config
+    pkg_val = Decimal(str(settings.PACKAGING_FEE))
+    packaging_fee = pkg_val if subtotal > 0 else Decimal("0.00")
+
+    gst_rate = Decimal(str(settings.GST_PERCENTAGE)) / Decimal("100.00")
+    gst_fee = round(subtotal * gst_rate, 2) if subtotal > 0 else Decimal("0.00")
+
+    platform_fee = Decimal(str(settings.PLATFORM_FEE)) if subtotal > 0 else Decimal("0.00")
 
     grand_total = max(Decimal("0.00"), subtotal - coupon_discount + packaging_fee + gst_fee + platform_fee)
     total_discount = item_discount_total + coupon_discount
@@ -361,8 +366,9 @@ async def calculate_bill(
         ))
 
     if gst_fee > 0:
+        gst_pct_display = int(settings.GST_PERCENTAGE) if float(settings.GST_PERCENTAGE).is_integer() else settings.GST_PERCENTAGE
         breakdown.append(BreakdownItem(
-            title="GST (5%)",
+            title=f"GST ({gst_pct_display}%)",
             amount=gst_fee,
             is_discount=False,
             is_highlighted=False,

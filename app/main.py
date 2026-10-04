@@ -459,12 +459,16 @@ async def seed_database():
     async with AsyncSessionLocal() as db:
 
         college_to_canteens = {
+            "Scient Institute of Technology": ["Main Canteen", "Demo Canteen"],
+            "Demo College": ["Demo Canteen"],
             "Engineering College": ["Central Canteen", "Hostel Canteen"],
             "Business College": ["MBA Canteen", "Food Court Express"],
             "Arts College": ["Arts Canteen"],
             "Science College": ["Science Canteen"],
         }
         vendor_specs = [
+            ("scient_main@onfood.local", "Scient Main Canteen Vendor", "Main Canteen"),
+            ("demo_canteen@onfood.local", "Demo Canteen Vendor", "Demo Canteen"),
             ("central@onfood.local", "Central Canteen Vendor", "Central Canteen"),
             ("hostel@onfood.local", "Hostel Canteen Vendor", "Hostel Canteen"),
             ("mba@onfood.local", "MBA Canteen Vendor", "MBA Canteen"),
@@ -485,6 +489,19 @@ async def seed_database():
             ("Tandoori", "/icons/tandoori.png", 10),
         ]
         menu_specs = {
+            "Main Canteen": [
+                {"name": "Chicken Biryani", "price": "160", "original_price": "190", "discount_percent": "15.79", "category": "Biryani", "image_url": "/images/chicken-biryani.png", "prep": 15, "stock": 50, "special": True},
+                {"name": "Veg Dum Biryani", "price": "120", "category": "Biryani", "image_url": "/images/Veg%20Dum%20Biryani.png", "prep": 12, "stock": 40},
+                {"name": "Masala Dosa", "price": "60", "category": "South Indian", "image_url": "/images/masala-dosa.png", "prep": 8, "stock": 50},
+                {"name": "Tea", "price": "15", "category": "Beverages", "image_url": "/images/tea.png", "prep": 2, "stock": 100},
+                {"name": "Samosa", "price": "20", "category": "Snacks", "image_url": "/images/Samosa.png", "prep": 3, "stock": 60},
+            ],
+            "Demo Canteen": [
+                {"name": "Veg Fried Rice", "price": "90", "category": "Chinese", "image_url": "/images/veg-fried-rice.png", "prep": 10, "stock": 30},
+                {"name": "Paneer Butter Masala", "price": "160", "category": "Curries", "image_url": "/images/paneer-butter-masala.png", "prep": 15, "stock": 25},
+                {"name": "Butter Naan", "price": "40", "category": "Breads", "image_url": "/images/butter-naan.png", "prep": 5, "stock": 50},
+                {"name": "Cold Coffee", "price": "50", "category": "Beverages", "image_url": "/images/coffee.png", "prep": 4, "stock": 30},
+            ],
             "Central Canteen": [
                 {"name": "Chicken Biryani", "price": "160", "original_price": "190", "discount_percent": "15.79", "category": "Biryani", "image_url": "/images/chicken-biryani.png", "prep": 18, "stock": 40, "special": True},
                 {"name": "Veg Dum Biryani", "price": "130", "category": "Biryani", "image_url": "/images/Veg%20Dum%20Biryani.png", "prep": 15, "stock": 35},
@@ -523,6 +540,8 @@ async def seed_database():
             ],
         }
         banner_specs = [
+            ("Scient Institute of Technology", "Scient Canteen Welcome Deals", "/images/banner1.png"),
+            ("Demo College", "Demo Canteen Special Offers", "/images/banner2.png"),
             ("Engineering College", "Engineering Combo Week", "/images/banner1.png"),
             ("Business College", "Business Lunch Deals", "/images/banner2.png"),
             ("Arts College", "Arts Snack Festival", "/images/banner3.png"),
