@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
 
     # ── Database ─────────────────────────────────────────────────────────────
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/onfood"
+    DATABASE_URL: str = "postgresql+asyncpg://buvvadb:buvvA%406@localhost:5432/onfood"
     SQL_ECHO: bool = False
 
     # ── JWT ──────────────────────────────────────────────────────────────────
