@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     OTP_MAX_ATTEMPTS: int = 5
     # Set separately from JWT_SECRET so that rotating one does not affect the other.
     OTP_HASH_SECRET: str | None = None
+    REQUIRE_REGISTRATION_OTP: bool = True
+    REQUIRE_ORDER_PICKUP_OTP: bool = False
+    REQUIRE_ORDER_PLACEMENT_OTP: bool = True
 
     # ── Redis / Cache ─────────────────────────────────────────────────────────
     CACHE_REDIS_URL: str | None = None
@@ -52,9 +55,11 @@ class Settings(BaseSettings):
     # ── Business rules ────────────────────────────────────────────────────────
     ORDER_COOLDOWN_SECONDS: int = 10
 
-    # ── WhatsApp bot ──────────────────────────────────────────────────────────
+    # ── WhatsApp bot / Support Desk ───────────────────────────────────────────
     WHATSAPP_BOT_URL: str = "http://127.0.0.1:3000"
     WHATSAPP_BOT_INTERNAL_KEY: str | None = None
+    SUPPORT_BOT_URL: str | None = None
+    INTERNAL_API_KEY: str | None = None
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     # Comma-separated list of allowed browser origins, e.g.:
@@ -85,6 +90,16 @@ class Settings(BaseSettings):
     # ── Firebase Admin SDK (FCM) & Firestore ──────────────────────────────────
     FIREBASE_CREDENTIALS_PATH: str = "serviceAccountKey.json"
     FIRESTORE_MONGO_URI: str | None = None
+
+    # ── Monitoring ────────────────────────────────────────────────────────────
+    # Threshold in ms above which a request is flagged as "slow" in logs
+    SLOW_REQUEST_THRESHOLD_MS: int = 500
+
+    # Enable/disable the /metrics Prometheus endpoint
+    ENABLE_METRICS: bool = True
+
+    # Enable/disable process resource tracking (CPU, memory via psutil)
+    ENABLE_RESOURCE_TRACKING: bool = True
 
     class Config:
         env_file = ".env"

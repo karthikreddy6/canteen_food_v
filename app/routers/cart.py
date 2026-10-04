@@ -4,10 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.database import get_db
-from app.models import CartItem, MenuItem, User
+from app.models import CartItem, MenuItem, User, Coupon
 from app.schemas import (
     CartResponse, CartItemResponse, AddToCartRequest, BulkReplaceCartRequest,
-    UpdateCartItemRequest, CartValidateResponse, CartValidateIssue
+    UpdateCartItemRequest, CartValidateResponse, CartValidateIssue,
+    CalculateBillRequest, BillResponse, BillItemDetail, BreakdownItem
 )
 from app.security import get_current_user_id_verified as get_current_user_id
 from app.exceptions import NotFoundException, BadRequestException
@@ -253,4 +254,131 @@ async def validate_cart(
         is_valid=len(issues) == 0,
         issues=issues,
         current_total=current_total
+    )
+
+
+@router.post("/calculate-bill", response_model=BillResponse)
+async def calculate_bill(
+    payload: CalculateBillRequest,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    """
+    Dynamic Checkout Billing & Tax Breakdown API.
+    Calculates subtotal, discounts, packaging fees, GST, and returns dynamic breakdown.
+    """
+    subtotal = Decimal("0.00")
+    item_discount_total = Decimal("0.00")
+    bill_items: list[BillItemDetail] = []
+
+    for ci in payload.items:
+        menu_result = await db.execute(
+            select(MenuItem).where(MenuItem.id == ci.menu_item_id)
+        )
+        menu_item = menu_result.scalars().first()
+        if not menu_item:
+            raise NotFoundException(f"Menu item not found: {ci.menu_item_id}")
+
+        orig_price = Decimal(str(menu_item.original_price if menu_item.original_price is not None else menu_item.price))
+        selling_price = Decimal(str(menu_item.price))
+        unit_discount = max(Decimal("0.00"), orig_price - selling_price)
+        line_discount = unit_discount * ci.quantity
+        line_total = selling_price * ci.quantity
+
+        subtotal += line_total
+        item_discount_total += line_discount
+
+        bill_items.append(BillItemDetail(
+            menu_item_id=menu_item.id,
+            item_name=menu_item.name,
+            quantity=ci.quantity,
+            original_price=orig_price,
+            discount_amount=line_discount,
+            final_price=selling_price,
+            line_total=line_total,
+            prep_time_minutes=menu_item.preparation_time_minutes or 10,
+        ))
+
+    # Coupon discount calculation
+    coupon_discount = Decimal("0.00")
+    applied_coupon_code = None
+    if payload.coupon_code:
+        code_clean = payload.coupon_code.strip().upper()
+        coupon_res = await db.execute(
+            select(Coupon).where(Coupon.code == code_clean, Coupon.active == True)
+        )
+        coupon = coupon_res.scalars().first()
+        if coupon:
+            if coupon.min_order_amount is None or subtotal >= Decimal(str(coupon.min_order_amount)):
+                if coupon.discount_type == "PERCENT":
+                    coupon_discount = (subtotal * Decimal(str(coupon.value))) / Decimal("100.00")
+                else:
+                    coupon_discount = min(Decimal(str(coupon.value)), subtotal)
+                if coupon.max_discount_amount is not None:
+                    coupon_discount = min(coupon_discount, Decimal(str(coupon.max_discount_amount)))
+                coupon_discount = round(coupon_discount, 2)
+                applied_coupon_code = code_clean
+
+    # Dynamic fees & taxes
+    packaging_fee = Decimal("3.00") if subtotal > 0 else Decimal("0.00")
+    gst_fee = round(subtotal * Decimal("0.05"), 2) if subtotal > 0 else Decimal("0.00")
+    platform_fee = Decimal("0.00")
+
+    grand_total = max(Decimal("0.00"), subtotal - coupon_discount + packaging_fee + gst_fee + platform_fee)
+    total_discount = item_discount_total + coupon_discount
+
+    breakdown = [
+        BreakdownItem(
+            title="Subtotal",
+            amount=subtotal,
+            is_discount=False,
+            is_highlighted=False,
+        )
+    ]
+
+    if item_discount_total > 0:
+        breakdown.append(BreakdownItem(
+            title="Item Discount",
+            amount=item_discount_total,
+            is_discount=True,
+            is_highlighted=True,
+        ))
+
+    if coupon_discount > 0 and applied_coupon_code:
+        breakdown.append(BreakdownItem(
+            title=f"Coupon ({applied_coupon_code})",
+            amount=coupon_discount,
+            is_discount=True,
+            is_highlighted=True,
+        ))
+
+    if packaging_fee > 0:
+        breakdown.append(BreakdownItem(
+            title="Packaging Fee",
+            amount=packaging_fee,
+            is_discount=False,
+            is_highlighted=False,
+        ))
+
+    if gst_fee > 0:
+        breakdown.append(BreakdownItem(
+            title="GST (5%)",
+            amount=gst_fee,
+            is_discount=False,
+            is_highlighted=False,
+        ))
+
+    breakdown.append(BreakdownItem(
+        title="Platform Fee",
+        amount=platform_fee,
+        is_discount=False,
+        is_highlighted=False,
+    ))
+
+    return BillResponse(
+        subtotal=subtotal,
+        grand_total=grand_total,
+        total_discount=total_discount,
+        items=bill_items,
+        breakdown=breakdown,
     )

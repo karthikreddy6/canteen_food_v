@@ -12,16 +12,21 @@ from sse_starlette.sse import EventSourceResponse
 from typing import List, Optional
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.database import get_db, AsyncSessionLocal
-from app.models import Canteen, User, MenuItem, Order, OrderItem, OrderStatus, CartItem, KitchenSettings, TimeSlot, Coupon
+import logging
+from app.models import Canteen, User, MenuItem, Order, OrderItem, OrderStatus, CartItem, KitchenSettings, TimeSlot, Coupon, OrderConfirmationOtp
 from app.config import settings as app_settings
 from app.schemas import (
     CreateOrderRequest, OrderResponse, OrderItemResponse,
     UpdateOrderStatusRequest, OrderHistoryResponse, TimeSlotResponse,
-    StreamTicketResponse,
+    StreamTicketResponse, CollegeDetailResponse, CanteenDetailResponse,
+    VerifyOrderOtpRequest, VerifyOrderOtpResponse,
+    RequestOrderPlacementOtpRequest, RequestOrderPlacementOtpResponse,
+    CamelRequestModel,
 )
 from app.security import get_current_user_id, get_current_user_id_verified, get_current_user_id_optional
 from app.exceptions import NotFoundException, BadRequestException
 from app.sse import sse_manager
+from app.services.support_service import support_client
 from app.services.eta import get_kitchen_settings, count_active_orders
 from app.services.pickup import get_next_pickup_number
 from app.college_scoping import get_user_college_info
@@ -36,6 +41,36 @@ def order_json(order: Order) -> dict:
     )
     student_name = order.user.name if order.user else "Student"
     placed_time = order.created_at.strftime("%Y-%m-%d %H:%M:%S") if order.created_at else None
+    canteen_dict = None
+    college_dict = None
+    if getattr(order, "canteen", None):
+        canteen_dict = {
+            "id": str(order.canteen.id),
+            "name": order.canteen.name,
+            "photoUrl": order.canteen.photo_url,
+            "photo_url": order.canteen.photo_url,
+            "locationDescription": order.canteen.location_description,
+            "location_description": order.canteen.location_description,
+            "mapUrl": order.canteen.map_url,
+            "map_url": order.canteen.map_url,
+            "latitude": order.canteen.latitude,
+            "longitude": order.canteen.longitude,
+        }
+        first_clg = order.canteen.colleges[0] if getattr(order.canteen, "colleges", None) else None
+        if not first_clg and order.user and getattr(order.user, "college_record", None):
+            first_clg = order.user.college_record
+        if first_clg:
+            college_dict = {
+                "id": str(first_clg.id),
+                "name": first_clg.name,
+                "photoUrl": first_clg.photo_url,
+                "photo_url": first_clg.photo_url,
+                "mapUrl": first_clg.map_url,
+                "map_url": first_clg.map_url,
+                "latitude": first_clg.latitude,
+                "longitude": first_clg.longitude,
+            }
+
     return {
         "id": str(order.id),
         "userId": order.user_id,
@@ -57,6 +92,8 @@ def order_json(order: Order) -> dict:
         "scheduledSlotId": str(order.scheduled_slot_id) if order.scheduled_slot_id else None,
         "notes": order.notes,
         "createdAt": order.created_at.isoformat() if order.created_at else None,
+        "college": college_dict,
+        "canteen": canteen_dict,
         "items": [
             {
                 "menuItemId": str(item.menu_item_id),
@@ -102,6 +139,31 @@ def _build_order_response(order: Order) -> OrderResponse:
             is_available=order.scheduled_slot.is_active
         )
 
+    college_resp = None
+    canteen_resp = None
+    if getattr(order, "canteen", None):
+        canteen_resp = CanteenDetailResponse(
+            id=order.canteen.id,
+            name=order.canteen.name,
+            photo_url=order.canteen.photo_url,
+            location_description=order.canteen.location_description,
+            map_url=order.canteen.map_url,
+            latitude=order.canteen.latitude,
+            longitude=order.canteen.longitude,
+        )
+        first_clg = order.canteen.colleges[0] if getattr(order.canteen, "colleges", None) else None
+        if not first_clg and order.user and getattr(order.user, "college_record", None):
+            first_clg = order.user.college_record
+        if first_clg:
+            college_resp = CollegeDetailResponse(
+                id=first_clg.id,
+                name=first_clg.name,
+                photo_url=first_clg.photo_url,
+                map_url=first_clg.map_url,
+                latitude=first_clg.latitude,
+                longitude=first_clg.longitude,
+            )
+
     return OrderResponse(
         id=order.id,
         user_id=order.user_id,
@@ -123,6 +185,11 @@ def _build_order_response(order: Order) -> OrderResponse:
         scheduled_slot_id=order.scheduled_slot_id,
         scheduled_slot=scheduled_slot_resp,
         points_earned=order.points_earned or 0,
+        college=college_resp,
+        canteen=canteen_resp,
+        pickup_otp=order.pickup_otp,
+        is_otp_required=bool(app_settings.REQUIRE_ORDER_PICKUP_OTP),
+        payment_method=getattr(order, "payment_method", "PAY_AT_COUNTER") or "PAY_AT_COUNTER",
     )
 
 
@@ -134,6 +201,7 @@ async def _load_order_for_response(db: AsyncSession, order_id: UUID) -> Order | 
             selectinload(Order.items).selectinload(OrderItem.menu_item),
             selectinload(Order.user),
             selectinload(Order.scheduled_slot),
+            selectinload(Order.canteen).selectinload(Canteen.colleges),
         )
         .where(Order.id == order_id)
     )
@@ -176,6 +244,94 @@ async def _auto_progress_order(order_id: str):
 
 # ─── Endpoints ─────────────────────────────────
 
+@router.post("/request-placement-otp", response_model=RequestOrderPlacementOtpResponse)
+@router.post("/request-otp", response_model=RequestOrderPlacementOtpResponse, include_in_schema=False)
+async def request_order_placement_otp(
+    payload: Optional[RequestOrderPlacementOtpRequest] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id_verified)
+):
+    """
+    Request an OTP sent to the user's phone to verify and confirm a Pay on Counter order.
+    If REQUIRE_ORDER_PLACEMENT_OTP is disabled on the server, otp_required will be false.
+    """
+    user = (await db.execute(select(User).where(User.id == current_user_id))).scalar_one_or_none()
+    if not user:
+        raise NotFoundException(f"User not found: {current_user_id}")
+
+    if not app_settings.REQUIRE_ORDER_PLACEMENT_OTP:
+        return RequestOrderPlacementOtpResponse(
+            otp_required=False,
+            message="OTP verification is not required for order placement.",
+            phone=user.phone,
+            fallback_otp=None
+        )
+
+    if not user.phone:
+        raise BadRequestException("No mobile number linked to your account. Please update your profile with a phone number.")
+
+    import secrets as py_secrets
+    from app.routers.auth import otp_hash, mask_phone, throttle_otp_per_phone
+    await throttle_otp_per_phone(user.phone)
+
+    # 4-digit code for quick entry
+    placement_otp = f"{py_secrets.randbelow(10000):04d}"
+
+    # Upsert order_confirmation_otps
+    existing = (await db.execute(
+        select(OrderConfirmationOtp).where(OrderConfirmationOtp.user_id == user.id)
+    )).scalar_one_or_none()
+    if existing:
+        await db.delete(existing)
+        await db.flush()
+
+    expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=app_settings.OTP_EXPIRY_MINUTES)
+    db.add(OrderConfirmationOtp(
+        user_id=user.id,
+        code_hash=otp_hash(placement_otp),
+        expires_at=expires_at,
+        attempts=0
+    ))
+    await db.commit()
+
+    # Dispatch to user phone via WhatsApp/Support service
+    order_msg = (
+        f"🔐 *OnFood Order Verification*\n"
+        f"Your verification code is: *{placement_otp}*\n"
+        f"Valid for {app_settings.OTP_EXPIRY_MINUTES} minutes. Enter this code in the app to confirm your Pay on Counter order."
+    )
+    sent = False
+    try:
+        from app.services.support_service import support_service
+        res = await support_service.send_customer_message(
+            phone=user.phone,
+            message=order_msg,
+            channel="BOTH"
+        )
+        sent = bool(res and res.get("ok", True))
+    except Exception as exc:
+        logging.warning(f"Failed to dispatch order placement OTP to {user.phone}: {exc}")
+        sent = False
+
+    masked = mask_phone(user.phone)
+    if sent:
+        return RequestOrderPlacementOtpResponse(
+            otp_required=True,
+            message=f"Verification code sent to {masked}",
+            expires_in_minutes=app_settings.OTP_EXPIRY_MINUTES,
+            phone=user.phone,
+            fallback_otp=None
+        )
+    else:
+        return RequestOrderPlacementOtpResponse(
+            otp_required=True,
+            message=f"Could not send SMS/WhatsApp to {masked}. Use verification code {placement_otp} to confirm.",
+            expires_in_minutes=app_settings.OTP_EXPIRY_MINUTES,
+            phone=user.phone,
+            fallback_otp=placement_otp
+        )
+
+
 @router.post("", response_model=OrderResponse, status_code=201)
 async def create_order(
     request: CreateOrderRequest,
@@ -184,6 +340,7 @@ async def create_order(
 ):
     """
     Place a new order.
+    - Verifies Pay on Counter OTP if enabled on server.
     - Pulls items from cart if no items array provided.
     - Checks kitchen is accepting orders.
     - Validates availability of each item.
@@ -202,6 +359,33 @@ async def create_order(
     user = user_result.scalars().first()
     if not user:
         raise NotFoundException(f"User not found: {user_id}")
+
+    # Verify Pay on Counter OTP if server requires it
+    payment_method = (request.payment_method or "PAY_AT_COUNTER").strip().upper()
+    if app_settings.REQUIRE_ORDER_PLACEMENT_OTP and payment_method in {"PAY_AT_COUNTER", "CASH", "COUNTER"}:
+        if not request.otp or not request.otp.strip():
+            raise BadRequestException("Verification code is required to confirm Pay at Counter orders. Please enter your OTP.")
+
+        verification = (await db.execute(
+            select(OrderConfirmationOtp).where(OrderConfirmationOtp.user_id == user_id)
+        )).scalar_one_or_none()
+
+        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        if not verification or verification.expires_at <= now_utc:
+            raise BadRequestException("Order verification code has expired. Please request a new OTP.")
+
+        if verification.attempts >= app_settings.OTP_MAX_ATTEMPTS:
+            raise BadRequestException("Too many invalid OTP attempts. Please request a new code.")
+
+        from app.routers.auth import otp_hash
+        import secrets as py_secrets
+        if not py_secrets.compare_digest(verification.code_hash, otp_hash(request.otp.strip())):
+            verification.attempts += 1
+            await db.commit()
+            raise BadRequestException("Invalid verification code")
+
+        # OTP is valid! Consume it
+        await db.delete(verification)
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     if user.last_order_at:
@@ -410,8 +594,10 @@ async def create_order(
             minutes=base_prep + queue_buffer
         )
 
-    # 8. Get pickup number
+    # 8. Get pickup number and generate pickup OTP
     pickup_num, pickup_dt = await get_next_pickup_number(db)
+    import secrets as py_secrets
+    pickup_otp = f"{py_secrets.randbelow(10000):04d}"
 
     # 9. Create Order
     new_order = Order(
@@ -424,6 +610,8 @@ async def create_order(
         status=order_status,
         pickup_number=pickup_num,
         pickup_date=pickup_dt,
+        pickup_otp=pickup_otp,
+        payment_method=request.payment_method or "PAY_AT_COUNTER",
         order_token=(_roll_number_token(user.roll_number, pickup_num)
                      if user.use_roll_number_as_order_token and user.roll_number
                      else str(pickup_num)),
@@ -474,7 +662,24 @@ async def create_order(
     # 11. Re-fetch with relationships
     saved_order = await _load_order_for_response(db, new_order.id)
 
-    # 11b. Cross-broadcast new order to vendor app screens (real-time sync)
+    # 11b. Send Order Pickup OTP to user's phone / WhatsApp
+    if user.phone:
+        order_msg = (
+            f"🎉 Your OnFood order #{saved_order.pickup_number or str(saved_order.id)[:6]} has been placed!\n"
+            f"🔑 Counter Pickup OTP: *{pickup_otp}*\n"
+            f"Total: ₹{saved_order.total_amount}. Show this OTP at the counter when collecting your food."
+        )
+        try:
+            from app.services.support_service import support_service
+            asyncio.create_task(support_service.send_customer_message(
+                phone=user.phone,
+                message=order_msg,
+                channel="BOTH"
+            ))
+        except Exception as e:
+            logging.warning(f"Could not dispatch order OTP notification to {user.phone}: {e}")
+
+    # 11c. Cross-broadcast new order to vendor app screens (real-time sync)
     try:
         from app.pubsub import event_bridge
         payload = order_json(saved_order)
@@ -524,6 +729,8 @@ async def get_order_history(
         .options(
             selectinload(Order.items).selectinload(OrderItem.menu_item),
             selectinload(Order.scheduled_slot),
+            selectinload(Order.user),
+            selectinload(Order.canteen).selectinload(Canteen.colleges),
         )
         .where(Order.user_id == current_user_id)
         .order_by(Order.created_at.desc())
@@ -638,6 +845,143 @@ async def update_order_status(
 
     updated_order = await _load_order_for_response(db, orderId)
     return _build_order_response(updated_order)
+
+
+@router.post("/{order_id}/verify-otp", response_model=VerifyOrderOtpResponse)
+@router.post("/{order_id}/check-otp", response_model=VerifyOrderOtpResponse, include_in_schema=False)
+async def verify_order_otp(
+    order_id: UUID,
+    payload: VerifyOrderOtpRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+):
+    """
+    Verify customer's pickup OTP for an order.
+    Counter staff or system can call this to validate the order OTP.
+    If `auto_complete` is true and OTP matches, status is transitioned to DELIVERED.
+    """
+    order = await _load_order_for_response(db, order_id)
+    if not order:
+        raise NotFoundException(f"Order not found: {order_id}")
+
+    # Check OTP requirement setting
+    if not app_settings.REQUIRE_ORDER_PICKUP_OTP:
+        # If server does not require OTP, consider valid or bypass
+        if payload.auto_complete and order.status != OrderStatus.DELIVERED:
+            order.status = OrderStatus.DELIVERED
+            order.actual_ready_at = datetime.now(timezone.utc)
+            await db.commit()
+        return VerifyOrderOtpResponse(
+            valid=True,
+            order_id=order.id,
+            status=order.status,
+            message="OTP verification is optional/disabled on server. Order verified."
+        )
+
+    clean_otp = (payload.otp or "").strip()
+    if not order.pickup_otp or order.pickup_otp != clean_otp:
+        return VerifyOrderOtpResponse(
+            valid=False,
+            order_id=order.id,
+            status=order.status,
+            message="Invalid pickup OTP"
+        )
+
+    if payload.auto_complete and order.status != OrderStatus.DELIVERED:
+        order.status = OrderStatus.DELIVERED
+        order.actual_ready_at = datetime.now(timezone.utc)
+        await db.commit()
+
+        # Broadcast status update
+        await sse_manager.broadcast_to_user(order.user_id, "order-status", {
+            "orderId": str(order.id),
+            "userId": order.user_id,
+            "status": order.status.value,
+            "pickupNumber": order.pickup_number,
+            "estimatedReadyAt": order.estimated_ready_at.isoformat() if order.estimated_ready_at else None,
+            "updatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        })
+        try:
+            from app.pubsub import event_bridge
+            await event_bridge.notify("order_status_updated", order_json(order))
+        except Exception as e:
+            print(f"[SSE Error] Failed to broadcast status update: {e}")
+
+    return VerifyOrderOtpResponse(
+        valid=True,
+        order_id=order.id,
+        status=order.status,
+        message="Order pickup OTP verified successfully"
+    )
+
+
+@router.post("/verify-otp", response_model=VerifyOrderOtpResponse)
+@router.post("/check-otp", response_model=VerifyOrderOtpResponse, include_in_schema=False)
+async def check_order_otp_general(
+    payload: VerifyOrderOtpRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: Optional[str] = Depends(get_current_user_id_optional)
+):
+    """
+    Alternative route accepting order_id in JSON payload:
+    POST /api/orders/check-otp or POST /api/orders/verify-otp
+    """
+    if not payload.order_id:
+        raise BadRequestException("orderId is required in request body")
+    return await verify_order_otp(payload.order_id, payload, db, current_user_id)
+
+
+class OrderDelayRequest(CamelRequestModel):
+    minutes: int = 10
+    message: Optional[str] = None
+
+
+@router.patch("/{order_id}/delay")
+async def flag_kitchen_delay(
+    order_id: UUID,
+    payload: Optional[OrderDelayRequest] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Flag a kitchen delay on an order: extends ETA buffer and triggers
+    automated Support Desk & WhatsApp notification via support_service.
+    """
+    order = await _load_order_for_response(db, order_id)
+    if not order:
+        raise NotFoundException(f"Order not found: {order_id}")
+
+    delay_minutes = payload.minutes if payload else 10
+    custom_msg = payload.message if payload else None
+
+    # Extend ETA
+    if order.estimated_ready_at:
+        order.estimated_ready_at += timedelta(minutes=delay_minutes)
+    else:
+        order.estimated_ready_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=delay_minutes)
+
+    await db.commit()
+
+    # Broadcast ETA update to user
+    order_dict = order_json(order)
+    try:
+        from app.pubsub import event_bridge
+        await event_bridge.notify("order_status_updated", order_dict)
+    except Exception as e:
+        print(f"[SSE Error] Failed to broadcast delay update: {e}")
+
+    # Forward delay alert to Support Desk & WhatsApp Engine in background
+    asyncio.create_task(support_client.send_delay_alert(
+        order_id=str(order.id),
+        buffer_minutes=delay_minutes,
+        custom_message=custom_msg
+    ))
+
+    return {
+        "status": "delayed_notice_sent",
+        "orderId": str(order.id),
+        "extendedMinutes": delay_minutes,
+        "newEstimatedReadyAt": order.estimated_ready_at.isoformat() if order.estimated_ready_at else None,
+    }
 
 
 @router.post("/stream/ticket", response_model=StreamTicketResponse, status_code=201)

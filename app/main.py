@@ -1,8 +1,6 @@
-import logging
-import logging.handlers
 import os
-import time
-import uuid
+import asyncio
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from decimal import Decimal
 import json
@@ -26,67 +24,18 @@ from app.security import (
 from app.routers import menu, orders, auth, cart, kitchen, help as help_router, promotions, locations, rewards
 from app.config import settings as app_config
 
-
-# ─── Logging setup ────────────────────────────────────────────
-# Write logs to a dedicated subdirectory with automatic rotation.
-_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
-os.makedirs(_LOG_DIR, exist_ok=True)
-
-request_logger = logging.getLogger("onfood.request")
-response_logger = logging.getLogger("onfood.response")
-
-# Redact these key names wherever they appear in logged request/response bodies
-# or query parameters so tokens and credentials never reach log files.
-_SENSITIVE_KEYS = {
-    "password", "otp", "token", "access_token", "authorization",
-    "hashed_password", "key", "app_key", "x-app-key", "appkey",
-}
-# Query parameter names whose values should be redacted (e.g. ?token=<JWT> for SSE clients, ?key= for static media)
-_SENSITIVE_QUERY_PARAMS = {"token", "access_token", "key", "app_key", "x-app-key", "appkey"}
-
-for _logger, _filename in ((request_logger, "request.log"), (response_logger, "response.log")):
-    if not _logger.handlers:
-        _handler = logging.handlers.RotatingFileHandler(
-            os.path.join(_LOG_DIR, _filename),
-            maxBytes=10_000_000,   # 10 MB per file
-            backupCount=5,
-            encoding="utf-8",
-        )
-        _handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-        _logger.addHandler(_handler)
-    _logger.setLevel(logging.INFO)
-    _logger.propagate = False
-
-# Exception logger (unhandled 500s) also goes to logs/
-_exc_handler = logging.handlers.RotatingFileHandler(
-    os.path.join(_LOG_DIR, "errors.log"),
-    maxBytes=10_000_000,
-    backupCount=5,
-    encoding="utf-8",
-)
-_exc_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-logging.getLogger("onfood.exceptions").addHandler(_exc_handler)
+# ─── NEW: Import middleware components ────────────────────────
+from app.middleware.context import install_context_logging
+from app.middleware.tracker import server_behavior_tracker, request_logger, response_logger, behavior_logger
+from app.middleware.metrics import mount_metrics_endpoint
+from app.middleware.resources import resource_monitor
 
 
-def _safe_log_data(value):
-    """Return JSON-safe request/response data without credentials or OTPs."""
-    if isinstance(value, dict):
-        return {
-            key: "[REDACTED]" if key.lower() in _SENSITIVE_KEYS else _safe_log_data(item)
-            for key, item in value.items()
-        }
-    if isinstance(value, list):
-        return [_safe_log_data(item) for item in value]
-    return value
-
-
-def _json_body(raw_body: bytes):
-    if not raw_body:
-        return None
-    try:
-        return _safe_log_data(json.loads(raw_body))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return "[non-json body]"
+# ─── Initialize middleware ────────────────────────────────────
+# Inject request context (req_id, client_ip) into all Python log records
+install_context_logging()
+# Configure resource tracking from settings
+resource_monitor.configure(enable_resource_tracking=app_config.ENABLE_RESOURCE_TRACKING)
 
 
 @asynccontextmanager
@@ -132,6 +81,12 @@ async def lifespan(app: FastAPI):
                         )
                 except Exception as fcm_err:
                     print(f"[FCM Error] Push dispatch failed: {fcm_err}")
+        elif event_data.get("event") == "support_message_created":
+            data = event_data.get("data", {})
+            user_id = data.get("userId")
+            if user_id:
+                from app.websocket import support_ws_manager
+                await support_ws_manager.broadcast_to_user(user_id, data)
 
     await event_bridge.start(handle_incoming_event)
     
@@ -163,185 +118,32 @@ app.add_middleware(
 )
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
-
-
-# ─── Dev middleware helpers ──────────────────────
-_SKIP_LOG_PREFIXES = ("/icons/", "/images/", "/sounds/", "/favicon", "/icons", "/images", "/sounds")
-
-# ANSI colors for terminal
-_C = {
-    "reset": "\033[0m",
-    "bold":  "\033[1m",
-    "green": "\033[92m",
-    "yellow":"\033[93m",
-    "red":   "\033[91m",
-    "cyan":  "\033[96m",
-    "grey":  "\033[90m",
-    "blue":  "\033[94m",
-    "magenta": "\033[95m",
-}
-
-def _status_color(status: int) -> str:
-    if status < 300:
-        return _C["green"]
-    if status < 400:
-        return _C["yellow"]
-    return _C["red"]
-
-def _method_color(method: str) -> str:
-    return {
-        "GET":    _C["cyan"],
-        "POST":   _C["green"],
-        "PATCH":  _C["yellow"],
-        "PUT":    _C["yellow"],
-        "DELETE": _C["red"],
-    }.get(method, _C["reset"])
-
-
+# ─── Server Behavior Tracking Middleware (replaces old dev_request_logger) ────
 @app.middleware("http")
-async def dev_request_logger(request: Request, call_next):
-    # Assign a short request ID for tracing
-    req_id = str(uuid.uuid4())[:8]
-    request.state.request_id = req_id
+async def _behavior_tracker(request: Request, call_next):
+    """
+    Wraps every HTTP request with comprehensive behavior tracking:
+    request correlation IDs, resource monitoring, Prometheus metrics,
+    structured JSON logging, and pretty console output.
 
-    started = time.perf_counter()
-
-    # Read body for logging (must be done before call_next)
-    request_body = await request.body()
-
-    # Skip verbose logging for static files and health check
+    Static media auth guard is preserved from the old middleware.
+    """
     path = request.url.path
-    skip = any(path.startswith(p) for p in _SKIP_LOG_PREFIXES) or path == "/"
 
-    # Extract real client IP (prioritizes CF-Connecting-IP from Cloudflare Tunnel)
-    client_ip = get_client_ip(request)
-
-    # ── Incoming request (dev console) ──
-    if not skip:
-        body_preview = ""
-        if request_body:
-            try:
-                parsed = _safe_log_data(json.loads(request_body))
-                body_preview = json.dumps(parsed, ensure_ascii=False)
-                if len(body_preview) > 300:
-                    body_preview = body_preview[:300] + "…"
-                body_preview = f"\n    {_C['grey']}Body: {body_preview}{_C['reset']}"
-            except Exception:
-                pass
-
-        # Scrub sensitive values from query params before logging
-        safe_qs = {
-            k: ("[REDACTED]" if k.lower() in _SENSITIVE_QUERY_PARAMS else v)
-            for k, v in request.query_params.items()
-        }
-        qs_str = ("?" + "&".join(f"{k}={v}" for k, v in safe_qs.items())) if safe_qs else ""
-        print(
-            f"  {_C['grey']}>> [{req_id}]{_C['reset']} [{_C['magenta']}{client_ip}{_C['reset']}] "
-            f"{_method_color(request.method)}{_C['bold']}{request.method}{_C['reset']} "
-            f"{_C['blue']}{path}{qs_str}{_C['reset']}"
-            f"{body_preview}",
-            flush=True
-        )
-
-    # ── Call actual endpoint (with static media authorization guard) ──
+    # Preserve static media authorization guard from old middleware
     if request.method != "OPTIONS" and is_static_media_path(path) and not verify_static_media_request(request):
         response = make_spring_error_response(
             status_code=401,
             error_name="Unauthorized",
             message="Missing or invalid app client key. Access is restricted to the official app.",
         )
-    else:
-        response = await call_next(request)
+        return response
 
-    duration_ms = round((time.perf_counter() - started) * 1000, 2)
+    return await server_behavior_tracker(request, call_next)
 
-    # Attach request-id to response so Android can trace it
-    response.headers["X-Request-Id"] = req_id
+# Mount Prometheus /metrics endpoint (controlled by ENABLE_METRICS config)
+mount_metrics_endpoint(app, enable_metrics=app_config.ENABLE_METRICS)
 
-    # ── Security headers ─────────────────────────────────────────────────────
-    # Emitted on every response regardless of environment.
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    # HSTS only makes sense when serving over HTTPS (i.e. production behind ngrok/Nginx)
-    if app_config.ENVIRONMENT == "production":
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-
-    # Capture response body for JSON logging without breaking SSE or large binary streams
-    content_type = response.headers.get("content-type", "")
-    is_streaming = "text/event-stream" in content_type or "multipart/" in content_type
-
-    response_body = None
-    if not skip and not is_streaming and hasattr(response, "body_iterator"):
-        chunks = []
-        async for chunk in response.body_iterator:
-            chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))
-        response_body = b"".join(chunks)
-        response = Response(
-            content=response_body,
-            status_code=response.status_code,
-            headers=dict(response.headers),
-            media_type=response.media_type,
-            background=response.background,
-        )
-    elif hasattr(response, "body"):
-        response_body = response.body
-
-    # ── Outgoing response (dev console) ──
-    if not skip:
-        sc = response.status_code
-        slow_warn = f" {_C['yellow']}SLOW{_C['reset']}" if duration_ms > 500 else ""
-        resp_preview = ""
-        if response_body:
-            try:
-                parsed = _safe_log_data(json.loads(response_body))
-                resp_preview = json.dumps(parsed, ensure_ascii=False)
-                if len(resp_preview) > 300:
-                    resp_preview = resp_preview[:300] + "…"
-                resp_preview = f"\n    {_C['grey']}Body: {resp_preview}{_C['reset']}"
-            except Exception:
-                pass
-
-        print(
-            f"  {_C['grey']}<< [{req_id}]{_C['reset']} "
-            f"{_status_color(sc)}{_C['bold']}{sc}{_C['reset']} "
-            f"{_C['grey']}{duration_ms}ms{_C['reset']}"
-            f"{slow_warn}"
-            f"{resp_preview}",
-            flush=True
-        )
-
-    # ── File logger ──────────────────────────────────────────────────────────
-    # In production, suppress full request/response bodies to avoid logging
-    # sensitive order data, user details, etc. Log only routing metadata.
-    is_production = app_config.ENVIRONMENT == "production"
-
-    # Scrub query params for the file log too (SSE ?token= must not appear)
-    safe_query = {
-        k: ("[REDACTED]" if k.lower() in _SENSITIVE_QUERY_PARAMS else v)
-        for k, v in request.query_params.items()
-    }
-    request_logger.info(json.dumps({
-        "req_id": req_id,
-        "client_ip": client_ip,
-        "event": "http_request",
-        "method": request.method,
-        "path": path,
-        "query": safe_query,
-        "request_json": None if is_production else _json_body(request_body),
-    }, ensure_ascii=False, default=str))
-    response_data = _json_body(response_body) if response_body is not None else None
-    response_logger.info(json.dumps({
-        "req_id": req_id,
-        "client_ip": client_ip,
-        "event": "http_response",
-        "method": request.method,
-        "path": path,
-        "status": response.status_code,
-        "duration_ms": duration_ms,
-        "response_json": None if is_production else response_data,
-    }, ensure_ascii=False, default=str))
-
-    return response
 
 # ─── Register Routers ───────────────────────────
 app.include_router(auth.router)
@@ -365,8 +167,41 @@ async def health_check():
     return {"status": "UP", "version": "2.0.0", "message": "OnFood backend running"}
 
 
+@app.get("/api/monitoring/live", tags=["Monitoring"])
+async def monitoring_live_stats():
+    """
+    Real-time snapshot of server behavior and active connections:
+    - Active WebSocket connections and connected users
+    - Active SSE streams
+    - Recently active authenticated HTTP users
+    - In-flight requests and system resource snapshots
+    """
+    from datetime import datetime, timezone
+    from app.websocket import ws_manager
+    from app.sse import sse_manager
+    from app.middleware.active_users import active_user_tracker
+    from app.middleware.resources import resource_monitor
+
+    snapshot = resource_monitor.snapshot()
+    ws_stats = ws_manager.get_stats()
+    sse_stats = sse_manager.get_stats()
+    http_active = active_user_tracker.get_active_users(window_seconds=900)  # last 15m
+
+    return {
+        "status": "UP",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "in_flight_requests": snapshot.in_flight_requests,
+        "memory_rss_mb": snapshot.memory_rss_mb,
+        "cpu_percent": snapshot.cpu_percent,
+        "websockets": ws_stats,
+        "sse": sse_stats,
+        "http_active_users": http_active,
+        "http_active_count": len(http_active),
+    }
+
+
 from fastapi import WebSocket, WebSocketDisconnect
-from app.websocket import ws_manager
+from app.websocket import ws_manager, support_ws_manager
 import jwt as _pyjwt
 
 @app.websocket("/ws/orders/{userId}")
@@ -406,7 +241,17 @@ async def websocket_orders_endpoint(websocket: WebSocket, userId: str):
         return
 
     # 3. Auth passed — accept and maintain connection.
-    await ws_manager.connect(userId, websocket)
+    client_ip = get_client_ip(websocket)
+    ws_started = __import__('time').perf_counter()
+    behavior_logger.info(json.dumps({
+        "event": "ws_connect",
+        "path": "/ws/orders/{userId}",
+        "user_id": userId,
+        "client_ip": client_ip,
+    }, ensure_ascii=False))
+    user_agent = websocket.headers.get("user-agent", "")
+    await ws_manager.connect(userId, websocket, client_ip=client_ip, user_agent=user_agent)
+    disconnect_reason = "client_closed"
     try:
         while True:
             # Keep connection alive; client messages are not processed.
@@ -414,7 +259,197 @@ async def websocket_orders_endpoint(websocket: WebSocket, userId: str):
     except WebSocketDisconnect:
         ws_manager.disconnect(userId, websocket)
     except Exception:
+        disconnect_reason = "error"
         ws_manager.disconnect(userId, websocket)
+    finally:
+        duration_s = round(__import__('time').perf_counter() - ws_started, 2)
+        behavior_logger.info(json.dumps({
+            "event": "ws_disconnect",
+            "path": "/ws/orders/{userId}",
+            "user_id": userId,
+            "client_ip": client_ip,
+            "duration_seconds": duration_s,
+            "reason": disconnect_reason,
+        }, ensure_ascii=False))
+
+
+@app.websocket("/ws/support/{userId}")
+async def websocket_support_endpoint(websocket: WebSocket, userId: str):
+    """
+    Real-time two-way Customer Support WebSocket.
+    Allows students to chat live with customer support desk / AI assistant.
+    Auth: Pass JWT via Authorization header or ?token=<jwt> or ?ticket=<ticket>.
+    """
+    from app.security import _decode_token, UnauthenticatedException
+    from app.database import AsyncSessionLocal
+    from app.models import SupportTicket, SupportMessage, TicketStatus, User
+    from app.services.support_service import support_client
+    from sqlalchemy.future import select
+    import uuid
+
+    # 1. Enforce App Client Key if configured
+    app_key = websocket.headers.get("x-app-key") or websocket.query_params.get("app_key")
+    if app_config.APP_CLIENT_KEY and app_key != app_config.APP_CLIENT_KEY:
+        await websocket.close(code=4001, reason="Invalid app client key")
+        return
+
+    # 2. Extract token/ticket
+    raw_token: str | None = None
+    auth_header = websocket.headers.get("authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        raw_token = auth_header[7:].strip()
+    if not raw_token:
+        raw_token = websocket.query_params.get("token") or websocket.query_params.get("ticket")
+
+    authenticated_user_id = userId
+    if raw_token and raw_token != "guest":
+        try:
+            payload = _decode_token(raw_token)
+            token_user_id = str(payload.get("sub", ""))
+            if userId != "guest" and token_user_id != userId:
+                await websocket.close(code=4003, reason="User ID does not match token")
+                return
+            authenticated_user_id = token_user_id
+        except UnauthenticatedException:
+            pass  # Fallback to guest or continue if ticket was opaque
+
+    client_ip = get_client_ip(websocket)
+    user_agent = websocket.headers.get("user-agent", "")
+    from app.websocket import support_ws_manager
+    await support_ws_manager.connect(userId, websocket, client_ip=client_ip, user_agent=user_agent)
+
+    try:
+        while True:
+            raw_data = await websocket.receive_text()
+            try:
+                msg_json = json.loads(raw_data)
+            except Exception:
+                continue
+
+            msg_type = msg_json.get("type", "chat_message")
+            if msg_type == "chat_message":
+                user_msg = (msg_json.get("message") or "").strip()
+                if not user_msg:
+                    continue
+
+                ticket_id_str = msg_json.get("ticket_id") or msg_json.get("ticketId")
+                order_id_str = msg_json.get("order_id") or msg_json.get("orderId")
+                ticket_uuid = None
+                is_reopened = False
+
+                # Persist ticket & message to PostgreSQL
+                try:
+                    async with AsyncSessionLocal() as db:
+                        ticket = None
+                        if ticket_id_str:
+                            try:
+                                ticket = (await db.execute(
+                                    select(SupportTicket).where(SupportTicket.id == uuid.UUID(ticket_id_str))
+                                )).scalars().first()
+                            except Exception:
+                                ticket = None
+
+                        # If user references an order, continue old ticket for that order
+                        if not ticket and order_id_str and authenticated_user_id != "guest":
+                            try:
+                                ticket = (await db.execute(
+                                    select(SupportTicket)
+                                    .where(SupportTicket.user_id == authenticated_user_id, SupportTicket.order_id == uuid.UUID(order_id_str))
+                                    .order_by(SupportTicket.created_at.desc())
+                                )).scalars().first()
+                            except Exception:
+                                ticket = None
+
+                        if not ticket and authenticated_user_id != "guest":
+                            ticket = (await db.execute(
+                                select(SupportTicket)
+                                .where(SupportTicket.user_id == authenticated_user_id, SupportTicket.status == TicketStatus.OPEN)
+                                .order_by(SupportTicket.created_at.desc())
+                            )).scalars().first()
+
+                        if ticket and ticket.status in (TicketStatus.RESOLVED, TicketStatus.CLOSED):
+                            is_reopened = True
+                            ticket.status = TicketStatus.OPEN
+
+                        if not ticket:
+                            order_uuid = None
+                            if order_id_str:
+                                try:
+                                    order_uuid = uuid.UUID(order_id_str)
+                                except Exception:
+                                    pass
+                            ticket = SupportTicket(
+                                user_id=authenticated_user_id,
+                                subject="Customer Support Inquiry",
+                                message=user_msg,
+                                order_id=order_uuid,
+                                status=TicketStatus.OPEN,
+                            )
+                            db.add(ticket)
+                            await db.flush()
+
+                        ticket_uuid = ticket.id
+                        ticket.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+
+                        # Customer Message
+                        customer_msg = SupportMessage(
+                            ticket_id=ticket.id,
+                            sender_type="USER",
+                            sender_id=authenticated_user_id,
+                            sender_name="Customer",
+                            message=user_msg,
+                            channel="APP",
+                        )
+                        db.add(customer_msg)
+
+                        # Bot Auto-Reply Message
+                        if is_reopened:
+                            bot_text = "We've reopened your support request for this order. What seems to be the problem? Our support team will respond in a minute."
+                        else:
+                            bot_text = "Thanks for messaging! What is the problem with your order? Our support team will respond in a minute."
+
+                        bot_msg = SupportMessage(
+                            ticket_id=ticket.id,
+                            sender_type="BOT",
+                            sender_id="buvva-assistant",
+                            sender_name="Buvva Assistant",
+                            message=bot_text,
+                            channel="APP",
+                        )
+                        db.add(bot_msg)
+                        await db.commit()
+                except Exception as db_err:
+                    print(f"[Support WS DB Error] {db_err}")
+
+                # Send Bot Response back over WebSocket
+                reply = {
+                    "type": "chat_message",
+                    "messageId": str(uuid.uuid4()),
+                    "ticketId": str(ticket_uuid) if ticket_uuid else ticket_id_str,
+                    "senderType": "BOT",
+                    "senderName": "Buvva Assistant",
+                    "message": "Thanks for messaging! A canteen support agent has received your query.",
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
+                await websocket.send_text(json.dumps(reply))
+
+                # Forward to Support Desk asynchronously in background
+                if authenticated_user_id != "guest":
+                    async def _bg_forward(uid: str, msg: str):
+                        try:
+                            async with AsyncSessionLocal() as db:
+                                user = (await db.execute(select(User).where(User.id == uid))).scalars().first()
+                                phone = user.phone if user and user.phone else ""
+                            if phone:
+                                await support_client.send_customer_message(phone=phone, message=msg, channel="APP")
+                        except Exception:
+                            pass
+                    asyncio.create_task(_bg_forward(authenticated_user_id, user_msg))
+
+    except WebSocketDisconnect:
+        support_ws_manager.disconnect(userId, websocket)
+    except Exception:
+        support_ws_manager.disconnect(userId, websocket)
 
 
 # ─── Seeder ────────────────────────────────────

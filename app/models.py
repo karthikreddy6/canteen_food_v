@@ -3,7 +3,7 @@ import uuid
 import datetime
 from sqlalchemy import (
     Column, String, Numeric, Boolean, ForeignKey, DateTime,
-    Integer, Enum, func, Text, Date, Time, Table
+    Integer, Enum, func, Text, Date, Time, Table, Float
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -27,6 +27,7 @@ class TicketStatus(str, enum.Enum):
     OPEN = "OPEN"
     IN_PROGRESS = "IN_PROGRESS"
     RESOLVED = "RESOLVED"
+    CLOSED = "CLOSED"
 
 class PointsTransactionType(str, enum.Enum):
     EARNED = "EARNED"        # Points earned from a completed order
@@ -47,6 +48,11 @@ class College(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
+    photo_url = Column(Text, nullable=True)
+    map_url = Column(Text, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+
     canteens = relationship("Canteen", secondary=college_canteens, back_populates="colleges")
 
 
@@ -56,6 +62,12 @@ class Canteen(Base):
     name = Column(String, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     auto_accept_orders = Column(Boolean, nullable=False, default=False, server_default="false")
+    photo_url = Column(Text, nullable=True)
+    map_url = Column(Text, nullable=True)
+    location_description = Column(Text, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+
     colleges = relationship("College", secondary=college_canteens, back_populates="canteens")
     vendors = relationship("VendorAccount", back_populates="canteen")
     menu_items = relationship("MenuItem", back_populates="canteen")
@@ -94,6 +106,9 @@ class User(Base):
     premium_expires_at = Column(DateTime, nullable=True)  # NULL = no expiry
     # Account status: 'active', 'hold'
     status = Column(String, nullable=False, default="active", server_default="active")
+    avatar = Column(String(50), nullable=False, default="default", server_default="default")  # "male", "female", "default"
+    gender = Column(String(20), nullable=True)  # "MALE", "FEMALE", "OTHER"
+    has_chosen_avatar = Column(Boolean, nullable=False, default=False, server_default="false")
 
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
@@ -102,6 +117,7 @@ class User(Base):
     preferred_canteen = relationship("Canteen", foreign_keys=[preferred_canteen_id])
     registration_otp = relationship("RegistrationOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
     password_reset_otp = relationship("PasswordResetOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
+    order_confirmation_otp = relationship("OrderConfirmationOtp", back_populates="user", cascade="all, delete-orphan", uselist=False)
     points_transactions = relationship("PointsTransaction", back_populates="user", cascade="all, delete-orphan")
     fcm_tokens = relationship("UserFcmToken", back_populates="user", cascade="all, delete-orphan")
 
@@ -131,6 +147,19 @@ class PasswordResetOtp(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     user = relationship("User", back_populates="password_reset_otp")
+
+
+class OrderConfirmationOtp(Base):
+    __tablename__ = "order_confirmation_otps"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    code_hash = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    user = relationship("User", back_populates="order_confirmation_otp")
 
 
 class VendorAccount(Base):
@@ -282,6 +311,8 @@ class Order(Base):
     # Pickup counter number — resets daily
     pickup_number = Column(Integer, nullable=True)
     pickup_date = Column(Date, nullable=True)     # Date the pickup_number was assigned
+    pickup_otp = Column(String(10), nullable=True)
+    payment_method = Column(String(50), nullable=False, default="PAY_AT_COUNTER", server_default="PAY_AT_COUNTER")
     # ETA
     estimated_ready_at = Column(DateTime, nullable=True)
     actual_ready_at = Column(DateTime, nullable=True)
@@ -301,6 +332,7 @@ class Order(Base):
     items = relationship("OrderItem", back_populates="order",
                          cascade="all, delete-orphan", lazy="joined")
     scheduled_slot = relationship("TimeSlot", lazy="joined")
+    canteen = relationship("Canteen", lazy="joined")
 
 
 class Coupon(Base):
@@ -420,14 +452,36 @@ class SupportTicket(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    order_id = Column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="SET NULL"), nullable=True)
     subject = Column(String, nullable=False)
     message = Column(Text, nullable=False)
     status = Column(Enum(TicketStatus, name="ticket_status"),
                     nullable=False, default=TicketStatus.OPEN)
     created_at = Column(DateTime, nullable=False,
-                        default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
+                        default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+                        server_default=func.now())
+    updated_at = Column(DateTime, nullable=False,
+                        default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+                        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
+                        server_default=func.now())
 
     user = relationship("User", back_populates="tickets")
+    messages = relationship("SupportMessage", back_populates="ticket", cascade="all, delete-orphan", lazy="selectin")
+
+
+class SupportMessage(Base):
+    __tablename__ = "support_messages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    ticket_id = Column(UUID(as_uuid=True), ForeignKey("support_tickets.id", ondelete="CASCADE"), nullable=False, index=True)
+    sender_type = Column(String(20), nullable=False)  # 'USER', 'CUSTOMER', 'AGENT', 'BOT'
+    sender_id = Column(String(64), nullable=False)
+    sender_name = Column(String(100), default="Support")
+    message = Column(Text, nullable=False)
+    channel = Column(String(20), default="APP")       # 'APP', 'WHATSAPP', 'BOTH'
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    ticket = relationship("SupportTicket", back_populates="messages")
 
 
 # ─────────────────────────────────────────────

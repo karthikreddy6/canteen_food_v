@@ -308,8 +308,9 @@ async def require_app_client(request: HTTPConnection) -> None:
     if not settings.APP_CLIENT_KEY:
         # Guard disabled — development mode
         return
-    # Health check endpoint (/) is used by Docker and load balancers to check liveness
-    if request.url.path == "/":
+    # Health check (/), Prometheus metrics (/metrics), and live monitoring (/api/monitoring/live)
+    # endpoints are used by monitoring dashboards and scrapers — they bypass the guard.
+    if request.url.path in ("/", "/metrics", "/api/monitoring/live"):
         return
     key = extract_app_client_key(request)
     if not verify_app_client_key_value(key):

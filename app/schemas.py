@@ -165,6 +165,43 @@ class CartValidateResponse(CamelModel):
     current_total: Decimal
 
 
+class CartItemInput(CamelRequestModel):
+    menu_item_id: UUID
+    quantity: int = Field(ge=1, le=99)
+
+
+class CalculateBillRequest(CamelRequestModel):
+    canteen_id: Optional[UUID] = None
+    items: List[CartItemInput]
+    coupon_code: Optional[str] = None
+
+
+class BreakdownItem(CamelModel):
+    title: str
+    amount: Decimal
+    is_discount: bool = False
+    is_highlighted: bool = False
+
+
+class BillItemDetail(CamelModel):
+    menu_item_id: UUID
+    item_name: str
+    quantity: int
+    original_price: Decimal
+    discount_amount: Decimal = Decimal("0.00")
+    final_price: Decimal
+    line_total: Decimal
+    prep_time_minutes: int = 10
+
+
+class BillResponse(CamelModel):
+    subtotal: Decimal
+    grand_total: Decimal
+    total_discount: Decimal
+    items: List[BillItemDetail]
+    breakdown: List[BreakdownItem]
+
+
 # ─────────────────────────────────────────────
 # Order
 # ─────────────────────────────────────────────
@@ -182,6 +219,8 @@ class CreateOrderRequest(CamelRequestModel):
     scheduled_date: Optional[date] = None
     scheduled_slot_id: Optional[UUID] = None
     coupon_code: Optional[str] = Field(default=None, max_length=50)
+    payment_method: str = "PAY_AT_COUNTER"
+    otp: Optional[str] = None
 
 class OrderItemResponse(CamelModel):
     id: UUID
@@ -192,6 +231,26 @@ class OrderItemResponse(CamelModel):
     price_at_time_of_order: Decimal
     line_total: Optional[Decimal] = None
 
+
+class CollegeDetailResponse(CamelModel):
+    id: UUID
+    name: str
+    photo_url: Optional[str] = None
+    map_url: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
+class CanteenDetailResponse(CamelModel):
+    id: UUID
+    name: str
+    photo_url: Optional[str] = None
+    location_description: Optional[str] = None
+    map_url: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
 class OrderResponse(CamelModel):
     id: UUID
     user_id: str
@@ -201,6 +260,7 @@ class OrderResponse(CamelModel):
     total_amount: Decimal
     discount_amount: Decimal = Decimal("0.00")
     coupon_code: Optional[str] = None
+    payment_method: str = "PAY_AT_COUNTER"
     status: OrderStatus
     pickup_number: Optional[int] = None
     pickup_date: Optional[date] = None
@@ -213,6 +273,31 @@ class OrderResponse(CamelModel):
     scheduled_slot_id: Optional[UUID] = None
     scheduled_slot: Optional[TimeSlotResponse] = None
     points_earned: int = 0
+    college: Optional[CollegeDetailResponse] = None
+    canteen: Optional[CanteenDetailResponse] = None
+    pickup_otp: Optional[str] = None
+    is_otp_required: bool = False
+
+class RequestOrderPlacementOtpRequest(CamelRequestModel):
+    payment_method: str = "PAY_AT_COUNTER"
+
+class RequestOrderPlacementOtpResponse(CamelModel):
+    otp_required: bool = True
+    message: str
+    expires_in_minutes: int = 5
+    phone: Optional[str] = None
+    fallback_otp: Optional[str] = None
+
+class VerifyOrderOtpRequest(CamelRequestModel):
+    order_id: Optional[UUID] = None
+    otp: str
+    auto_complete: bool = False
+
+class VerifyOrderOtpResponse(CamelModel):
+    valid: bool
+    order_id: UUID
+    status: OrderStatus
+    message: str
 
 class UpdateOrderStatusRequest(CamelRequestModel):
     status: OrderStatus
@@ -260,11 +345,20 @@ class UserResponse(CamelModel):
     preferred_canteen_id: Optional[UUID] = None
     use_roll_number_as_order_token: bool = False
     phone_verified: bool = False
+    avatar: str = "default"
+    gender: Optional[str] = None
+    has_chosen_avatar: bool = False
     # Reward Points & Premium
     reward_points_balance: int = 0
     lifetime_points_earned: int = 0
     is_premium: bool = False
     status: str = "active"
+
+    @model_validator(mode="after")
+    def check_has_chosen_avatar(self) -> "UserResponse":
+        if (self.avatar and self.avatar != "default") or self.gender:
+            self.has_chosen_avatar = True
+        return self
 
 class RegisterRequest(CamelRequestModel):
     name: str = Field(min_length=1, max_length=100)
@@ -320,8 +414,10 @@ class RegistrationOtpResponse(CamelModel):
 
 
 class VerifyRegistrationOtpRequest(CamelRequestModel):
-    email: str = Field(min_length=5, max_length=254)
-    otp: str = Field(min_length=6, max_length=6)
+    email: Optional[str] = Field(default=None, max_length=254)
+    identifier: Optional[str] = Field(default=None, max_length=254)
+    phone: Optional[str] = Field(default=None, max_length=20)
+    otp: str = Field(min_length=4, max_length=6)
 
 
 class ResendRegistrationOtpRequest(CamelRequestModel):
@@ -402,6 +498,8 @@ class ResetPasswordResponse(CamelModel):
 class UpdateProfileRequest(CamelRequestModel):
     name: Optional[str] = Field(default=None, max_length=100)
     phone: Optional[str] = Field(default=None, max_length=20)
+    avatar: Optional[str] = Field(default=None, max_length=50)
+    gender: Optional[str] = Field(default=None, max_length=20)
     password: Optional[str] = Field(default=None, min_length=8, max_length=128)
     roll_number: Optional[str] = Field(default=None, pattern=r"^\d{3}$", description="3-digit college ID / roll number (000-999)")
     college: Optional[str] = Field(default=None, min_length=1, max_length=200)
@@ -434,13 +532,32 @@ class FaqCategoryResponse(CamelModel):
 class CreateTicketRequest(CamelRequestModel):
     subject: str = Field(min_length=1, max_length=200)
     message: str = Field(min_length=1, max_length=2000)
+    order_id: Optional[UUID] = None
+
+class PostMessageRequest(CamelRequestModel):
+    message: str = Field(min_length=1, max_length=2000)
+    sender_name: Optional[str] = None
+
+class SupportMessageResponse(CamelModel):
+    id: UUID
+    ticket_id: UUID
+    sender_type: str
+    sender_id: str
+    sender_name: Optional[str] = "Support"
+    message: str
+    channel: Optional[str] = "APP"
+    created_at: datetime
 
 class TicketResponse(CamelModel):
     id: UUID
+    user_id: Optional[str] = None
+    order_id: Optional[UUID] = None
     subject: str
     message: str
     status: TicketStatus
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    messages: List[SupportMessageResponse] = []
 
 
 # ─────────────────────────────────────────────

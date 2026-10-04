@@ -27,7 +27,7 @@ from app.security import (
     hash_password, verify_password, verify_password_async,
     create_access_token, create_refresh_token, hash_refresh_jti,
     create_password_reset_token, verify_password_reset_token,
-    UnauthenticatedException, get_current_user_id_verified, get_client_ip,
+    UnauthenticatedException, get_current_user_id_verified, get_current_user_id_optional, get_client_ip,
     _decode_token,
 )
 from app.exceptions import BadRequestException, NotFoundException
@@ -90,32 +90,62 @@ async def send_registration_otp(phone: str, code: str) -> bool:
         return False
 
 
+async def send_registration_email_otp(email: str, name: str, code: str) -> bool:
+    """Send verification OTP code via Zoho SMTP email."""
+    from app.email import send_email
+    subject = f"Your OnFood Verification Code: {code}"
+    body = (
+        f"<div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #333;'>"
+        f"<h2 style='color: #ff6f00;'>Welcome to OnFood!</h2>"
+        f"<p>Hi <b>{name or 'there'}</b>,</p>"
+        f"<p>Thank you for registering. Your verification code is:</p>"
+        f"<div style='background: #fff3e0; padding: 18px; text-align: center; "
+        f"border-radius: 8px; margin: 18px 0; border: 1px dashed #ff9800;'>"
+        f"<span style='font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #e65100;'>"
+        f"{code}</span></div>"
+        f"<p>This code expires in <b>{settings.OTP_EXPIRY_MINUTES} minutes</b>.</p>"
+        f"<p>Please enter this code in the app to complete your verification.</p>"
+        f"<hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'>"
+        f"<p style='color: #999; font-size: 12px;'>OnFood - Campus Food Ordering</p>"
+        f"</div>"
+    )
+    return await send_email(to=email, subject=subject, body=body, html=True)
+
+
 async def create_and_send_otp(user: User, db: AsyncSession, is_resend: bool = False) -> tuple[bool, str, str | None]:
-    # Per-phone throttle: max 3 sends per hour
-    await throttle_otp_per_phone(user.phone)
+    # Per-phone throttle: max 3 sends per hour if phone is present
+    if user.phone:
+        await throttle_otp_per_phone(user.phone)
 
-    digits_only = "".join(char for char in (user.phone or "") if char.isdigit())
-    last_six = digits_only[-6:] if len(digits_only) >= 6 else None
-
-    # Generate a random 6-digit code for WhatsApp delivery
+    # Generate a random 6-digit code
     random_code = f"{secrets.randbelow(1_000_000):06d}"
 
-    # Attempt to send OTP via WhatsApp
-    sent = await send_registration_otp(user.phone, random_code)
+    # Attempt to send OTP via email
+    sent = False
+    if user.email:
+        try:
+            sent = await send_registration_email_otp(user.email, user.name or "", random_code)
+        except Exception as exc:
+            logging.error(f"Error sending registration email OTP to {user.email}: {exc}")
+            sent = False
 
     if sent:
         otp_code = random_code
         fallback_otp = None
+        masked = mask_email(user.email)
         message = (
-            "A new verification code was sent to your WhatsApp number."
+            f"A new verification code was sent to your email ({masked})."
             if is_resend
-            else "Verification code sent to your WhatsApp number."
+            else f"Verification code sent to your email ({masked})."
         )
     else:
-        # If sending OTP failed, use the last 6 digits of the phone number
-        otp_code = last_six or random_code
+        # If email delivery failed (e.g. SMTP credentials not set or network down), provide fallback OTP
+        otp_code = random_code
         fallback_otp = otp_code
-        message = "Failed to send verification code. Your OTP is the last 6 digits of your phone number."
+        masked = mask_email(user.email) if user.email else "your email"
+        message = (
+            f"Could not send email to {masked}. Use verification code {fallback_otp} to complete registration."
+        )
 
     existing = (await db.execute(
         select(RegistrationOtp).where(RegistrationOtp.user_id == user.id)
@@ -297,10 +327,25 @@ async def register(request: RegisterRequest, http_request: Request, db: AsyncSes
             )
             db.add(new_user)
 
+        if not settings.REQUIRE_REGISTRATION_OTP:
+            new_user.phone_verified = True
+            await db.commit()
+            return RegistrationOtpResponse(
+                verification_required=False,
+                expires_in_minutes=0,
+                message="Registration successful. OTP verification is not required.",
+                delivery_failed=False,
+                otp_failed=False,
+                otp_sent=False,
+                status="verified",
+                fallback_otp=None,
+            )
+
         await db.flush()
 
     sent, message, fallback_otp = await create_and_send_otp(new_user, db, is_resend=False)
     return RegistrationOtpResponse(
+        verification_required=True,
         expires_in_minutes=settings.OTP_EXPIRY_MINUTES,
         message=message,
         delivery_failed=not sent,
@@ -314,6 +359,7 @@ async def register(request: RegisterRequest, http_request: Request, db: AsyncSes
 # ─── OTP Verification ──────────────────────────────────────
 
 @router.post("/verify-otp", response_model=LoginResponse)
+@router.post("/check-otp", response_model=LoginResponse, include_in_schema=False)
 async def verify_otp(
     request: VerifyRegistrationOtpRequest,
     http_request: Request,
@@ -322,11 +368,36 @@ async def verify_otp(
     client_ip = get_client_ip(http_request)
     await rate_limit_login(client_ip)
 
-    user = (await db.execute(select(User).where(User.email == request.email))).scalar_one_or_none()
-    if not user or user.phone_verified:
-        raise BadRequestException("No pending registration was found for this email")
+    target_identifier = request.email or request.identifier or request.phone
+    if not target_identifier:
+        raise BadRequestException("Email, identifier, or phone is required")
+
+    target_identifier = target_identifier.strip()
+    if "@" in target_identifier:
+        user = (await db.execute(select(User).where(User.email.ilike(target_identifier)))).scalar_one_or_none()
+    else:
+        user = await find_user_by_identifier(db, target_identifier)
+
+    if not user:
+        raise BadRequestException("No registration was found for this email or phone")
     if getattr(user, "status", "active") == "hold":
         raise BadRequestException("Account is currently on hold. Please contact support.")
+
+    # If the user is already verified or server has OTP requirement disabled, log in directly
+    if user.phone_verified or not settings.REQUIRE_REGISTRATION_OTP:
+        user.phone_verified = True
+        user.token_version = (user.token_version or 1) + 1
+        user.refresh_token_version = (user.refresh_token_version or 1) + 1
+        access_token = create_access_token(user.id, token_version=user.token_version)
+        refresh_token, jti = create_refresh_token(user.id, refresh_version=user.refresh_token_version)
+        user.refresh_token_hash = hash_refresh_jti(jti)
+        await db.commit()
+        return LoginResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+            user=UserResponse.model_validate(user),
+        )
 
     verification = (await db.execute(
         select(RegistrationOtp).where(RegistrationOtp.user_id == user.id)
@@ -335,10 +406,10 @@ async def verify_otp(
     now = datetime.datetime.utcnow()
 
     if not verification or verification.expires_at <= now:
-        raise BadRequestException("Verification code has expired. Please register again.")
+        raise BadRequestException("Verification code has expired. Please register again or request a new code.")
     if verification.attempts >= settings.OTP_MAX_ATTEMPTS:
-        raise BadRequestException("Too many invalid attempts. Please register again.")
-    if not secrets.compare_digest(verification.code_hash, otp_hash(request.otp)):
+        raise BadRequestException("Too many invalid attempts. Please request a new code.")
+    if not secrets.compare_digest(verification.code_hash, otp_hash(request.otp.strip())):
         verification.attempts += 1
         await db.commit()
         raise BadRequestException("Invalid verification code")
@@ -368,13 +439,30 @@ async def verify_otp(
 
 @router.post("/resend-otp", response_model=RegistrationOtpResponse)
 async def resend_otp(request: ResendRegistrationOtpRequest, db: AsyncSession = Depends(get_db)):
-    user = (await db.execute(select(User).where(User.email == request.email))).scalar_one_or_none()
-    if not user or user.phone_verified or not await verify_password_async(request.password, user.hashed_password):
+    clean_email = request.email.strip()
+    user = (await db.execute(select(User).where(User.email.ilike(clean_email)))).scalar_one_or_none()
+    if not user or not await verify_password_async(request.password, user.hashed_password):
         raise BadRequestException("No pending registration was found for these credentials")
     if getattr(user, "status", "active") == "hold":
         raise BadRequestException("Account is currently on hold. Please contact support.")
+
+    if not settings.REQUIRE_REGISTRATION_OTP or user.phone_verified:
+        user.phone_verified = True
+        await db.commit()
+        return RegistrationOtpResponse(
+            verification_required=False,
+            expires_in_minutes=0,
+            message="Your account is already verified. You can log in.",
+            delivery_failed=False,
+            otp_failed=False,
+            otp_sent=False,
+            status="verified",
+            fallback_otp=None,
+        )
+
     sent, message, fallback_otp = await create_and_send_otp(user, db, is_resend=True)
     return RegistrationOtpResponse(
+        verification_required=True,
         expires_in_minutes=settings.OTP_EXPIRY_MINUTES,
         message=message,
         delivery_failed=not sent,
@@ -396,7 +484,8 @@ async def login(request: LoginRequest, http_request: Request, db: AsyncSession =
     await rate_limit_login_by_account(request.email)
     await enforce_ip_account_limit(client_ip, request.email)
 
-    result = await db.execute(select(User).where(User.email == request.email))
+    clean_email = request.email.strip()
+    result = await db.execute(select(User).where(User.email.ilike(clean_email)))
     user = result.scalars().first()
     if not user:
         raise UnauthenticatedException("Invalid email or password")
@@ -408,7 +497,11 @@ async def login(request: LoginRequest, http_request: Request, db: AsyncSession =
         raise UnauthenticatedException("Your account is currently on hold. Please contact support.")
 
     if not user.phone_verified:
-        raise UnauthenticatedException("Please verify your WhatsApp number before logging in")
+        if not settings.REQUIRE_REGISTRATION_OTP:
+            user.phone_verified = True
+            await db.commit()
+        else:
+            raise UnauthenticatedException("Please verify your account before logging in")
 
     # Bump token_version → invalidates ALL existing access tokens on other devices
     user.token_version = (user.token_version or 1) + 1
@@ -531,6 +624,12 @@ async def update_profile(
             user.name = request.name
         if request.phone is not None:
             user.phone = request.phone
+        if request.avatar is not None:
+            user.avatar = request.avatar
+            user.has_chosen_avatar = True
+        if request.gender is not None:
+            user.gender = request.gender
+            user.has_chosen_avatar = True
         if getattr(request, "roll_number", None) is not None:
             if not (len(request.roll_number) == 3 and request.roll_number.isdigit()):
                 raise BadRequestException("College ID must be a 3-digit number (e.g. 101)")
@@ -551,6 +650,20 @@ async def update_profile(
     result = await db.execute(select(User).where(User.id == current_user_id))
     updated_user = result.scalars().first()
     return UserResponse.model_validate(updated_user)
+
+
+@router.get("/me", response_model=UserResponse)
+@router.get("/profile", response_model=UserResponse)
+async def get_current_user_profile(
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id_verified),
+):
+    """Retrieve full profile of the currently authenticated user."""
+    result = await db.execute(select(User).where(User.id == current_user_id))
+    user = result.scalars().first()
+    if not user:
+        raise NotFoundException("User not found")
+    return UserResponse.model_validate(user)
 
 
 # ─── Delete Account ────────────────────────────────────────
@@ -830,23 +943,30 @@ async def register_device_token(
 @router.delete("/device-token", response_model=DeviceTokenResponse, status_code=status.HTTP_200_OK)
 async def unregister_device_token(
     request: DeviceTokenRequest,
-    user_id: str = Depends(get_current_user_id_verified),
+    user_id: Optional[str] = Depends(get_current_user_id_optional),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Remove an FCM device token upon user logout from both PostgreSQL and Firestore.
+    Safe to call with or without an active session (e.g. during logout or when access token expired).
     """
     token = (request.fcm_token or "").strip()
     if token:
         # 1. Delete from PostgreSQL
-        query = select(UserFcmToken).where(
-            UserFcmToken.fcm_token == token,
-            UserFcmToken.user_id == user_id
-        )
+        if user_id:
+            query = select(UserFcmToken).where(
+                UserFcmToken.fcm_token == token,
+                UserFcmToken.user_id == user_id
+            )
+        else:
+            query = select(UserFcmToken).where(
+                UserFcmToken.fcm_token == token
+            )
         result = await db.execute(query)
-        record = result.scalars().first()
-        if record:
+        records = result.scalars().all()
+        for record in records:
             await db.delete(record)
+        if records:
             await db.commit()
 
         # 2. Delete from Cloud Firestore

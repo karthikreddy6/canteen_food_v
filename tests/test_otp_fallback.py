@@ -22,6 +22,8 @@ def _make_test_user(**kwargs):
         "email": "test@example.com",
         "phone": "919876543210",
         "phone_verified": False,
+        "avatar": "default",
+        "has_chosen_avatar": False,
         "token_version": 1,
         "refresh_token_version": 1,
         "use_roll_number_as_order_token": False,
@@ -38,7 +40,7 @@ def test_registration_otp_response_schema():
     """Verify RegistrationOtpResponse defaults and delivery_failed flag."""
     resp = RegistrationOtpResponse(
         expires_in_minutes=5,
-        message="Verification code sent to your WhatsApp number.",
+        message="Verification code sent to your email.",
     )
     assert resp.verification_required is True
     assert resp.delivery_failed is False
@@ -55,7 +57,7 @@ def test_registration_otp_response_schema():
 
     resp_failed = RegistrationOtpResponse(
         expires_in_minutes=5,
-        message="Failed to send verification code. Your OTP is the last 6 digits of your phone number.",
+        message="Failed to send email verification code.",
         delivery_failed=True,
         otp_failed=True,
         otp_sent=False,
@@ -115,9 +117,9 @@ async def test_send_registration_otp_success():
 
 
 @pytest.mark.asyncio
-async def test_create_and_send_otp_failure_sets_last_six_digits():
-    """When WhatsApp send fails, OTP stored is the last 6 digits of the phone number."""
-    user = _make_test_user(phone="919876543210")
+async def test_create_and_send_otp_failure_sets_fallback_otp():
+    """When Email send fails, fallback OTP is returned in the response."""
+    user = _make_test_user(email="test@example.com", phone="919876543210")
 
     mock_db = AsyncMock()
     mock_scalar = MagicMock()
@@ -125,22 +127,22 @@ async def test_create_and_send_otp_failure_sets_last_six_digits():
     mock_db.execute.return_value = mock_scalar
 
     with patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
-         patch("app.routers.auth.send_registration_otp", new=AsyncMock(return_value=False)):
+         patch("app.routers.auth.send_registration_email_otp", new=AsyncMock(return_value=False)):
         sent, message, fallback_otp = await create_and_send_otp(user, mock_db, is_resend=False)
 
     assert sent is False
-    assert fallback_otp == "543210"
-    assert "last 6 digits" in message
+    assert fallback_otp is not None
+    assert len(fallback_otp) == 6
     assert mock_db.add.called
     added_otp = mock_db.add.call_args[0][0]
     assert isinstance(added_otp, RegistrationOtp)
-    assert added_otp.code_hash == otp_hash("543210")
+    assert added_otp.code_hash == otp_hash(fallback_otp)
 
 
 @pytest.mark.asyncio
 async def test_create_and_send_otp_success_sets_random_code():
-    """When WhatsApp send succeeds, OTP stored is the generated random code, not last 6 digits."""
-    user = _make_test_user(phone="919876543210")
+    """When Email send succeeds, OTP stored is the generated random code."""
+    user = _make_test_user(email="test@example.com", phone="919876543210")
 
     mock_db = AsyncMock()
     mock_scalar = MagicMock()
@@ -148,16 +150,15 @@ async def test_create_and_send_otp_success_sets_random_code():
     mock_db.execute.return_value = mock_scalar
 
     with patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
-         patch("app.routers.auth.send_registration_otp", new=AsyncMock(return_value=True)):
+         patch("app.routers.auth.send_registration_email_otp", new=AsyncMock(return_value=True)):
         sent, message, fallback_otp = await create_and_send_otp(user, mock_db, is_resend=False)
 
     assert sent is True
     assert fallback_otp is None
-    assert message == "Verification code sent to your WhatsApp number."
+    assert "email" in message
     assert mock_db.add.called
     added_otp = mock_db.add.call_args[0][0]
     assert isinstance(added_otp, RegistrationOtp)
-    assert added_otp.code_hash != otp_hash("543210")
 
 
 @pytest.mark.asyncio
@@ -231,3 +232,114 @@ async def test_verify_otp_rejects_wrong_code():
 
     assert verification.attempts == 1
     assert user.phone_verified is False
+
+
+@pytest.mark.asyncio
+async def test_verify_otp_when_server_otp_disabled():
+    """When REQUIRE_REGISTRATION_OTP is False, verify_otp immediately approves and logs in."""
+    user = _make_test_user(phone_verified=False)
+
+    mock_db = AsyncMock()
+    user_result = MagicMock()
+    user_result.scalar_one_or_none.return_value = user
+    mock_db.execute.return_value = user_result
+
+    mock_req = MagicMock()
+    mock_req.client.host = "127.0.0.1"
+
+    req_body = VerifyRegistrationOtpRequest(email="test@example.com", otp="999999")
+
+    with patch("app.routers.auth.settings.REQUIRE_REGISTRATION_OTP", False), \
+         patch("app.routers.auth.rate_limit_login", new=AsyncMock()):
+        resp = await verify_otp(request=req_body, http_request=mock_req, db=mock_db)
+
+    assert user.phone_verified is True
+    assert resp.access_token is not None
+
+
+@pytest.mark.asyncio
+async def test_order_pickup_otp_verification():
+    """Verify order pickup OTP logic when enabled and disabled."""
+    import uuid
+    from app.models import Order, OrderStatus
+    from app.schemas import VerifyOrderOtpRequest
+    from app.routers.orders import verify_order_otp
+
+    test_order_id = uuid.uuid4()
+    order = Order(
+        id=test_order_id,
+        user_id="usr-test-123",
+        status=OrderStatus.PLACED,
+        pickup_otp="4321",
+        total_amount=150.00,
+    )
+
+    mock_db = AsyncMock()
+
+    # 1. When REQUIRE_ORDER_PICKUP_OTP is True and valid OTP
+    with patch("app.routers.orders._load_order_for_response", new=AsyncMock(return_value=order)), \
+         patch("app.routers.orders.app_settings.REQUIRE_ORDER_PICKUP_OTP", True):
+        res = await verify_order_otp(
+            order_id=test_order_id,
+            payload=VerifyOrderOtpRequest(otp="4321", auto_complete=True),
+            db=mock_db
+        )
+        assert res.valid is True
+        assert res.status == OrderStatus.DELIVERED
+
+    # 2. When REQUIRE_ORDER_PICKUP_OTP is True and wrong OTP
+    order.status = OrderStatus.PLACED
+    with patch("app.routers.orders._load_order_for_response", new=AsyncMock(return_value=order)), \
+         patch("app.routers.orders.app_settings.REQUIRE_ORDER_PICKUP_OTP", True):
+        res = await verify_order_otp(
+            order_id=test_order_id,
+            payload=VerifyOrderOtpRequest(otp="0000", auto_complete=True),
+            db=mock_db
+        )
+        assert res.valid is False
+        assert res.status == OrderStatus.PLACED
+
+    # 3. When REQUIRE_ORDER_PICKUP_OTP is False (optional on server)
+    with patch("app.routers.orders._load_order_for_response", new=AsyncMock(return_value=order)), \
+         patch("app.routers.orders.app_settings.REQUIRE_ORDER_PICKUP_OTP", False):
+        res = await verify_order_otp(
+            order_id=test_order_id,
+            payload=VerifyOrderOtpRequest(otp="anything", auto_complete=True),
+            db=mock_db
+        )
+        assert res.valid is True
+        assert res.status == OrderStatus.DELIVERED
+
+
+@pytest.mark.asyncio
+async def test_request_order_placement_otp():
+    """Verify request_order_placement_otp behavior when enabled vs disabled."""
+    from app.routers.orders import request_order_placement_otp
+    from app.models import OrderConfirmationOtp
+
+    user = _make_test_user(phone="919876543210")
+    mock_db = AsyncMock()
+    mock_user_result = MagicMock()
+    mock_user_result.scalar_one_or_none.return_value = user
+
+    # When REQUIRE_ORDER_PLACEMENT_OTP is False
+    mock_db.execute.return_value = mock_user_result
+    with patch("app.routers.orders.app_settings.REQUIRE_ORDER_PLACEMENT_OTP", False):
+        res = await request_order_placement_otp(db=mock_db, current_user_id=user.id)
+        assert res.otp_required is False
+
+    # When REQUIRE_ORDER_PLACEMENT_OTP is True
+    existing_result = MagicMock()
+    existing_result.scalar_one_or_none.return_value = None
+    mock_db.execute.side_effect = [mock_user_result, existing_result]
+
+    with patch("app.routers.orders.app_settings.REQUIRE_ORDER_PLACEMENT_OTP", True), \
+         patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
+         patch("app.services.support_service.support_service.send_customer_message", new=AsyncMock(return_value={"ok": True})):
+        res = await request_order_placement_otp(db=mock_db, current_user_id=user.id)
+        assert res.otp_required is True
+        assert "Verification code sent" in res.message
+        assert mock_db.add.called
+        added = mock_db.add.call_args[0][0]
+        assert isinstance(added, OrderConfirmationOtp)
+
