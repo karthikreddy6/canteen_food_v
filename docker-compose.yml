@@ -7,15 +7,15 @@ services:
     container_name: onfood-postgres
     restart: always
     environment:
-      POSTGRES_USER: BUVVA
-      POSTGRES_PASSWORD: BUVA@KR
+      POSTGRES_USER: buvvadb
+      POSTGRES_PASSWORD: buvvA@6
       POSTGRES_DB: onfood
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U BUVVA -d onfood"]
+      test: ["CMD-SHELL", "pg_isready -U buvvadb -d onfood"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,7 +37,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://BUVVA:BUVA%40KR@db:5432/onfood
+      - DATABASE_URL=postgresql+asyncpg://buvvadb:buvvA%406@db:5432/onfood
       - ENVIRONMENT=production
       - ENABLE_DOCS=false
       - WEB_CONCURRENCY=4

@@ -1,8 +1,8 @@
 FROM postgres:16-alpine
 
 # Default environment settings
-ENV POSTGRES_USER=BUVVA \
-    POSTGRES_PASSWORD=BUVA@KR \
+ENV POSTGRES_USER=buvvadb \
+    POSTGRES_PASSWORD=buvvA@6 \
     POSTGRES_DB=onfood
 
 # Health check to ensure PostgreSQL is ready to accept connections
