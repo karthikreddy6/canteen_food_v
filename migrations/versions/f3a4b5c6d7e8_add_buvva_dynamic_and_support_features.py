@@ -52,7 +52,6 @@ def upgrade() -> None:
         ALTER TABLE support_tickets
         ADD COLUMN IF NOT EXISTS order_id UUID DEFAULT NULL REFERENCES orders(id) ON DELETE SET NULL,
         ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
-        ALTER TABLE support_tickets ALTER COLUMN order_id TYPE uuid USING order_id::uuid;
     """)
 
     # 5. support_messages table
