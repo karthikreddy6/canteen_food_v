@@ -120,11 +120,25 @@ async def create_and_send_otp(user: User, db: AsyncSession, is_resend: bool = Fa
     # Generate a random 6-digit code
     random_code = f"{secrets.randbelow(1_000_000):06d}"
 
-    # Attempt to send OTP via email
+    # Attempt to send OTP via WhatsApp first, then fallback to email
     sent = False
-    if user.email:
+    delivery_channel = None
+
+    if user.phone:
+        try:
+            sent = await send_registration_otp(user.phone, random_code)
+            if sent:
+                delivery_channel = "whatsapp"
+        except Exception as exc:
+            logging.warning(f"Error sending WhatsApp OTP to {user.phone}: {exc}")
+            sent = False
+
+    # If WhatsApp delivery failed (or user has no phone), fallback to email
+    if not sent and user.email:
         try:
             sent = await send_registration_email_otp(user.email, user.name or "", random_code)
+            if sent:
+                delivery_channel = "email"
         except Exception as exc:
             logging.error(f"Error sending registration email OTP to {user.email}: {exc}")
             sent = False
@@ -132,19 +146,31 @@ async def create_and_send_otp(user: User, db: AsyncSession, is_resend: bool = Fa
     if sent:
         otp_code = random_code
         fallback_otp = None
-        masked = mask_email(user.email)
-        message = (
-            f"A new verification code was sent to your email ({masked})."
-            if is_resend
-            else f"Verification code sent to your email ({masked})."
-        )
+        if delivery_channel == "whatsapp":
+            masked = mask_phone(user.phone)
+            message = (
+                f"A new verification code was sent to your WhatsApp ({masked})."
+                if is_resend
+                else f"Verification code sent to your WhatsApp ({masked})."
+            )
+        else:
+            masked = mask_email(user.email)
+            message = (
+                f"A new verification code was sent to your email ({masked})."
+                if is_resend
+                else (
+                    f"WhatsApp delivery failed. Verification code sent to your email ({masked})."
+                    if user.phone
+                    else f"Verification code sent to your email ({masked})."
+                )
+            )
     else:
-        # If email delivery failed (e.g. SMTP credentials not set or network down), provide fallback OTP
+        # If both WhatsApp and email delivery failed, provide fallback OTP
         otp_code = random_code
         fallback_otp = otp_code
-        masked = mask_email(user.email) if user.email else "your email"
+        masked = mask_email(user.email) if user.email else mask_phone(user.phone or "your phone")
         message = (
-            f"Could not send email to {masked}. Use verification code {fallback_otp} to complete registration."
+            f"Could not send verification code via WhatsApp or email to {masked}. Use verification code {fallback_otp} to complete registration."
         )
 
     existing = (await db.execute(
@@ -211,42 +237,71 @@ async def find_user_by_identifier(db: AsyncSession, identifier: str) -> User | N
 
 
 async def create_and_send_reset_otp(user: User, db: AsyncSession) -> tuple[bool, str, str | None]:
-    if not user.email:
-        raise BadRequestException("No registered email found for this account. Please contact support.")
+    if not user.email and not user.phone:
+        raise BadRequestException("No registered email or phone found for this account. Please contact support.")
 
     random_code = f"{secrets.randbelow(1_000_000):06d}"
 
-    # Send OTP via email
-    from app.email import send_email
-    sent = await send_email(
-        to=user.email,
-        subject=f"OnFood Password Reset Code: {random_code}",
-        body=(
-            f"<div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;'>"
-            f"<h2 style='color: #333;'>Password Reset</h2>"
-            f"<p>Hi <b>{user.name or 'there'}</b>,</p>"
-            f"<p>Your password reset verification code is:</p>"
-            f"<div style='background: #f5f5f5; padding: 20px; text-align: center; "
-            f"border-radius: 8px; margin: 16px 0;'>"
-            f"<span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333;'>"
-            f"{random_code}</span></div>"
-            f"<p>This code expires in <b>{settings.OTP_EXPIRY_MINUTES} minutes</b>.</p>"
-            f"<p>If you did not request this, please ignore this email.</p>"
-            f"<hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'>"
-            f"<p style='color: #999; font-size: 12px;'>OnFood - Campus Food Ordering</p>"
-            f"</div>"
-        ),
-        html=True,
-    )
+    sent = False
+    delivery_channel = None
+
+    # Try WhatsApp first if phone number is available
+    if user.phone:
+        try:
+            sent = await send_registration_otp(user.phone, random_code)
+            if sent:
+                delivery_channel = "whatsapp"
+        except Exception as exc:
+            logging.warning(f"Failed to send password reset OTP via WhatsApp to {user.phone}: {exc}")
+            sent = False
+
+    # If WhatsApp delivery failed (or user has no phone), fallback to email
+    if not sent and user.email:
+        from app.email import send_email
+        try:
+            sent = await send_email(
+                to=user.email,
+                subject=f"OnFood Password Reset Code: {random_code}",
+                body=(
+                    f"<div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;'>"
+                    f"<h2 style='color: #333;'>Password Reset</h2>"
+                    f"<p>Hi <b>{user.name or 'there'}</b>,</p>"
+                    f"<p>Your password reset verification code is:</p>"
+                    f"<div style='background: #f5f5f5; padding: 20px; text-align: center; "
+                    f"border-radius: 8px; margin: 16px 0;'>"
+                    f"<span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333;'>"
+                    f"{random_code}</span></div>"
+                    f"<p>This code expires in <b>{settings.OTP_EXPIRY_MINUTES} minutes</b>.</p>"
+                    f"<p>If you did not request this, please ignore this email.</p>"
+                    f"<hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'>"
+                    f"<p style='color: #999; font-size: 12px;'>OnFood - Campus Food Ordering</p>"
+                    f"</div>"
+                ),
+                html=True,
+            )
+            if sent:
+                delivery_channel = "email"
+        except Exception as exc:
+            logging.error(f"Error sending password reset email to {user.email}: {exc}")
+            sent = False
 
     if sent:
         otp_code = random_code
         fallback_otp = None
-        message = "Verification code sent to your registered email address."
+        if delivery_channel == "whatsapp":
+            masked = mask_phone(user.phone)
+            message = f"Verification code sent to your WhatsApp ({masked})."
+        else:
+            masked = mask_email(user.email)
+            message = (
+                f"WhatsApp delivery failed. Verification code sent to your email ({masked})."
+                if user.phone
+                else f"Verification code sent to your registered email address ({masked})."
+            )
     else:
         otp_code = random_code
         fallback_otp = otp_code
-        message = "Failed to send verification code via email. Please try again later."
+        message = "Failed to send verification code via WhatsApp or email. Please try again later."
 
     existing = (await db.execute(
         select(PasswordResetOtp).where(PasswordResetOtp.user_id == user.id)
@@ -769,7 +824,7 @@ async def verify_reset_otp(
     if verification.attempts >= settings.OTP_MAX_ATTEMPTS:
         raise BadRequestException("Too many invalid attempts. Please request a new code.")
 
-    if not secrets.compare_digest(verification.code_hash, otp_hash(request.otp)):
+    if not secrets.compare_digest(verification.code_hash, otp_hash(request.otp.strip())):
         verification.attempts += 1
         await db.commit()
         raise BadRequestException("Invalid verification code")

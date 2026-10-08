@@ -343,3 +343,63 @@ async def test_request_order_placement_otp():
         added = mock_db.add.call_args[0][0]
         assert isinstance(added, OrderConfirmationOtp)
 
+
+@pytest.mark.asyncio
+async def test_order_placement_otp_whatsapp_fails_falls_back_to_email():
+    """When WhatsApp fails for order placement OTP, it falls back to email."""
+    from app.routers.orders import request_order_placement_otp
+
+    user = _make_test_user(email="customer@example.com", phone="919876543210")
+    mock_db = AsyncMock()
+    mock_user_result = MagicMock()
+    mock_user_result.scalar_one_or_none.return_value = user
+    existing_result = MagicMock()
+    existing_result.scalar_one_or_none.return_value = None
+    mock_db.execute.side_effect = [mock_user_result, existing_result]
+
+    with patch("app.routers.orders.app_settings.REQUIRE_ORDER_PLACEMENT_OTP", True), \
+         patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
+         patch("app.services.support_service.support_service.send_customer_message", new=AsyncMock(return_value={"ok": False})), \
+         patch("app.email.send_email", new=AsyncMock(return_value=True)):
+        res = await request_order_placement_otp(db=mock_db, current_user_id=user.id)
+        assert res.otp_required is True
+        assert res.fallback_otp is None
+        assert "email" in res.message
+
+
+@pytest.mark.asyncio
+async def test_create_and_send_otp_whatsapp_success():
+    """When WhatsApp succeeds for registration, OTP sent via WhatsApp."""
+    user = _make_test_user(email="test@example.com", phone="919876543210")
+    mock_db = AsyncMock()
+    mock_scalar = MagicMock()
+    mock_scalar.scalar_one_or_none.return_value = None
+    mock_db.execute.return_value = mock_scalar
+
+    with patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
+         patch("app.routers.auth.send_registration_otp", new=AsyncMock(return_value=True)):
+        sent, message, fallback_otp = await create_and_send_otp(user, mock_db, is_resend=False)
+
+    assert sent is True
+    assert fallback_otp is None
+    assert "WhatsApp" in message
+
+
+@pytest.mark.asyncio
+async def test_create_and_send_otp_whatsapp_fails_falls_back_to_email():
+    """When WhatsApp fails for registration, OTP falls back to email."""
+    user = _make_test_user(email="test@example.com", phone="919876543210")
+    mock_db = AsyncMock()
+    mock_scalar = MagicMock()
+    mock_scalar.scalar_one_or_none.return_value = None
+    mock_db.execute.return_value = mock_scalar
+
+    with patch("app.routers.auth.throttle_otp_per_phone", new=AsyncMock()), \
+         patch("app.routers.auth.send_registration_otp", new=AsyncMock(return_value=False)), \
+         patch("app.routers.auth.send_registration_email_otp", new=AsyncMock(return_value=True)):
+        sent, message, fallback_otp = await create_and_send_otp(user, mock_db, is_resend=False)
+
+    assert sent is True
+    assert fallback_otp is None
+    assert "email" in message
+

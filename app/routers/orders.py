@@ -301,6 +301,7 @@ async def request_order_placement_otp(
         f"Valid for {app_settings.OTP_EXPIRY_MINUTES} minutes. Enter this code in the app to confirm your Pay on Counter order."
     )
     sent = False
+    delivery_channel = None
     try:
         from app.services.support_service import support_service
         res = await support_service.send_customer_message(
@@ -309,12 +310,54 @@ async def request_order_placement_otp(
             channel="BOTH"
         )
         sent = bool(res and res.get("ok", True))
+        if sent:
+            delivery_channel = "whatsapp"
     except Exception as exc:
         logging.warning(f"Failed to dispatch order placement OTP to {user.phone}: {exc}")
         sent = False
 
+    # Fallback to email if WhatsApp dispatch failed
+    if not sent and user.email:
+        from app.email import send_email
+        email_body = (
+            f"<div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #333;'>"
+            f"<h2 style='color: #ff6f00;'>OnFood Order Verification</h2>"
+            f"<p>Hi <b>{user.name or 'there'}</b>,</p>"
+            f"<p>Your verification code for Pay at Counter order is:</p>"
+            f"<div style='background: #fff3e0; padding: 18px; text-align: center; "
+            f"border-radius: 8px; margin: 18px 0; border: 1px dashed #ff9800;'>"
+            f"<span style='font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #e65100;'>"
+            f"{placement_otp}</span></div>"
+            f"<p>This code expires in <b>{app_settings.OTP_EXPIRY_MINUTES} minutes</b>.</p>"
+            f"<p>Enter this code in the app to confirm your Pay on Counter order.</p>"
+            f"<hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'>"
+            f"<p style='color: #999; font-size: 12px;'>OnFood - Campus Food Ordering</p>"
+            f"</div>"
+        )
+        try:
+            email_sent = await send_email(
+                to=user.email,
+                subject=f"OnFood Order Verification Code: {placement_otp}",
+                body=email_body,
+                html=True
+            )
+            if email_sent:
+                sent = True
+                delivery_channel = "email"
+        except Exception as exc:
+            logging.warning(f"Failed to dispatch order placement OTP via email to {user.email}: {exc}")
+
     masked = mask_phone(user.phone)
     if sent:
+        if delivery_channel == "email":
+            from app.routers.auth import mask_email
+            return RequestOrderPlacementOtpResponse(
+                otp_required=True,
+                message=f"WhatsApp delivery failed. Verification code sent to your email ({mask_email(user.email)}).",
+                expires_in_minutes=app_settings.OTP_EXPIRY_MINUTES,
+                phone=user.phone,
+                fallback_otp=None
+            )
         return RequestOrderPlacementOtpResponse(
             otp_required=True,
             message=f"Verification code sent to {masked}",
@@ -325,7 +368,7 @@ async def request_order_placement_otp(
     else:
         return RequestOrderPlacementOtpResponse(
             otp_required=True,
-            message=f"Could not send SMS/WhatsApp to {masked}. Use verification code {placement_otp} to confirm.",
+            message=f"Could not send SMS/WhatsApp or email to {masked}. Use verification code {placement_otp} to confirm.",
             expires_in_minutes=app_settings.OTP_EXPIRY_MINUTES,
             phone=user.phone,
             fallback_otp=placement_otp
