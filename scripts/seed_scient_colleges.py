@@ -16,10 +16,6 @@ COLLEGES = [
     {
         "name": "Scient Institute of Technology",
         "canteens": ["Main Canteen", "Demo Canteen"],
-    },
-    {
-        "name": "Demo College",
-        "canteens": ["Demo Canteen"],
     }
 ]
 

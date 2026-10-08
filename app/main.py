@@ -460,21 +460,10 @@ async def seed_database():
 
         college_to_canteens = {
             "Scient Institute of Technology": ["Main Canteen", "Demo Canteen"],
-            "Demo College": ["Demo Canteen"],
-            "Engineering College": ["Central Canteen", "Hostel Canteen"],
-            "Business College": ["MBA Canteen", "Food Court Express"],
-            "Arts College": ["Arts Canteen"],
-            "Science College": ["Science Canteen"],
         }
         vendor_specs = [
             ("scient_main@onfood.local", "Scient Main Canteen Vendor", "Main Canteen"),
             ("demo_canteen@onfood.local", "Demo Canteen Vendor", "Demo Canteen"),
-            ("central@onfood.local", "Central Canteen Vendor", "Central Canteen"),
-            ("hostel@onfood.local", "Hostel Canteen Vendor", "Hostel Canteen"),
-            ("mba@onfood.local", "MBA Canteen Vendor", "MBA Canteen"),
-            ("express@onfood.local", "Food Court Express Vendor", "Food Court Express"),
-            ("arts@onfood.local", "Arts Canteen Vendor", "Arts Canteen"),
-            ("science@onfood.local", "Science Canteen Vendor", "Science Canteen"),
         ]
         category_specs = [
             ("Biryani", "/icons/biryani.png", 1),
@@ -502,50 +491,9 @@ async def seed_database():
                 {"name": "Butter Naan", "price": "40", "category": "Breads", "image_url": "/images/butter-naan.png", "prep": 5, "stock": 50},
                 {"name": "Cold Coffee", "price": "50", "category": "Beverages", "image_url": "/images/coffee.png", "prep": 4, "stock": 30},
             ],
-            "Central Canteen": [
-                {"name": "Chicken Biryani", "price": "160", "original_price": "190", "discount_percent": "15.79", "category": "Biryani", "image_url": "/images/chicken-biryani.png", "prep": 18, "stock": 40, "special": True},
-                {"name": "Veg Dum Biryani", "price": "130", "category": "Biryani", "image_url": "/images/Veg%20Dum%20Biryani.png", "prep": 15, "stock": 35},
-                {"name": "Butter Chicken", "price": "180", "category": "Curries", "image_url": "/images/butter-chicken.png", "prep": 16, "stock": 25},
-                {"name": "Garlic Naan", "price": "45", "category": "Breads", "image_url": "/images/garlic-naan.png", "prep": 6, "stock": 60},
-            ],
-            "Hostel Canteen": [
-                {"name": "Idli", "price": "40", "category": "South Indian", "image_url": "/images/idli.png", "prep": 5, "stock": 60},
-                {"name": "Masala Dosa", "price": "65", "category": "South Indian", "image_url": "/images/masala-dosa.png", "prep": 8, "stock": 40},
-                {"name": "Pongal", "price": "55", "category": "South Indian", "image_url": "/images/pongal.png", "prep": 7, "stock": 35},
-                {"name": "Tea", "price": "15", "category": "Beverages", "image_url": "/images/tea.png", "prep": 2, "stock": 100},
-            ],
-            "MBA Canteen": [
-                {"name": "Paneer Tikka", "price": "155", "category": "Starters", "image_url": "/images/paneer-tikka.png", "prep": 14, "stock": 20},
-                {"name": "Paneer Butter Masala", "price": "170", "category": "Curries", "image_url": "/images/paneer-butter-masala.png", "prep": 16, "stock": 18},
-                {"name": "Butter Naan", "price": "40", "category": "Breads", "image_url": "/images/butter-naan.png", "prep": 5, "stock": 50},
-                {"name": "Sweet Lassi", "price": "50", "category": "Beverages", "image_url": "/images/sweet-lassi.png", "prep": 3, "stock": 30},
-            ],
-            "Food Court Express": [
-                {"name": "Veg Fried Rice", "price": "95", "category": "Chinese", "image_url": "/images/veg-fried-rice.png", "prep": 10, "stock": 30},
-                {"name": "Chicken Noodles", "price": "120", "category": "Chinese", "image_url": "/images/chicken-noodles.png", "prep": 11, "stock": 25},
-                {"name": "French Fries", "price": "70", "category": "Snacks", "image_url": "/images/french-fries.png", "prep": 6, "stock": 40},
-                {"name": "Fresh Lime Soda", "price": "35", "category": "Beverages", "image_url": "/images/fresh-lime-soda.png", "prep": 3, "stock": 45},
-            ],
-            "Arts Canteen": [
-                {"name": "Veg Puff", "price": "25", "category": "Snacks", "image_url": "/images/Veg%20Puff.png", "prep": 3, "stock": 50},
-                {"name": "Samosa", "price": "20", "category": "Snacks", "image_url": "/images/Samosa.png", "prep": 3, "stock": 60},
-                {"name": "Chocolate Brownie", "price": "80", "category": "Desserts", "image_url": "/images/chocolate-brownie.png", "prep": 4, "stock": 18, "special": True},
-                {"name": "Cold Coffee", "price": "60", "category": "Beverages", "image_url": "/images/coffee.png", "prep": 4, "stock": 24},
-            ],
-            "Science Canteen": [
-                {"name": "Egg Fried Rice", "price": "110", "category": "Chinese", "image_url": "/images/egg-fried-rice.png", "prep": 11, "stock": 28},
-                {"name": "Gobi Manchurian", "price": "100", "category": "Starters", "image_url": "/images/gobi-manchurian.png", "prep": 9, "stock": 25},
-                {"name": "Chilli Chicken", "price": "145", "category": "Starters", "image_url": "/images/chilli-chicken.png", "prep": 12, "stock": 22, "special": True},
-                {"name": "Buttermilk", "price": "25", "category": "Beverages", "image_url": "/images/buttermilk.png", "prep": 2, "stock": 50},
-            ],
         }
         banner_specs = [
             ("Scient Institute of Technology", "Scient Canteen Welcome Deals", "/images/banner1.png"),
-            ("Demo College", "Demo Canteen Special Offers", "/images/banner2.png"),
-            ("Engineering College", "Engineering Combo Week", "/images/banner1.png"),
-            ("Business College", "Business Lunch Deals", "/images/banner2.png"),
-            ("Arts College", "Arts Snack Festival", "/images/banner3.png"),
-            ("Science College", "Science Fuel Specials", "/images/banner1.png"),
         ]
 
         existing_colleges = {row.name: row for row in (await db.execute(select(College))).scalars().all()}
@@ -595,49 +543,6 @@ async def seed_database():
         if not ks_result.scalars().first():
             db.add(KitchenSettings(id=1, base_prep_buffer_minutes=3,
                                    max_concurrent_orders=20, is_accepting_orders=True))
-
-        # ── Default User (Premium) ──
-        user_result = await db.execute(select(User).where(User.email == "karthik@example.com"))
-        existing_karthik = user_result.scalars().first()
-        if not existing_karthik:
-            db.add(User(
-                name="Karthik",
-                email="karthik@example.com",
-                phone="9876543210",
-                phone_verified=True,
-                college="Engineering College",
-                college_id=colleges["Engineering College"].id,
-                preferred_canteen_id=canteens["Central Canteen"].id,
-                hashed_password=hash_password(hashlib.sha256(b"karthik_password").hexdigest()),
-                is_premium=True,
-                reward_points_balance=500,
-                lifetime_points_earned=500,
-            ))
-        else:
-            existing_karthik.is_premium = True
-            if existing_karthik.reward_points_balance == 0:
-                existing_karthik.reward_points_balance = 500
-                existing_karthik.lifetime_points_earned = 500
-
-        # ── Dedicated Premium User ──
-        prem_result = await db.execute(select(User).where(User.email == "premium@example.com"))
-        existing_prem = prem_result.scalars().first()
-        if not existing_prem:
-            db.add(User(
-                name="Premium User",
-                email="premium@example.com",
-                phone="9876543211",
-                phone_verified=True,
-                college="Engineering College",
-                college_id=colleges["Engineering College"].id,
-                preferred_canteen_id=canteens["Central Canteen"].id,
-                hashed_password=hash_password(hashlib.sha256(b"premium_password").hexdigest()),
-                is_premium=True,
-                reward_points_balance=1000,
-                lifetime_points_earned=1000,
-            ))
-        else:
-            existing_prem.is_premium = True
 
         # ── Categories ──
         cat_result = await db.execute(select(Category))
