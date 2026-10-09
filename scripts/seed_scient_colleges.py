@@ -21,10 +21,22 @@ COLLEGES = [
 
 VENDORS = [
     {
+        "email": "scient.vendor@onfood.com",
+        "name": "Scient Main Canteen Vendor",
+        "canteen_name": "Main Canteen",
+        "raw_password": "Scient@2026",
+    },
+    {
         "email": "scient_main@onfood.local",
         "name": "Scient Main Canteen Vendor",
         "canteen_name": "Main Canteen",
         "raw_password": "vendor_password",
+    },
+    {
+        "email": "demo.vendor@onfood.com",
+        "name": "Demo Canteen Vendor",
+        "canteen_name": "Demo Canteen",
+        "raw_password": "Demo@2026",
     },
     {
         "email": "demo_canteen@onfood.local",
@@ -144,7 +156,7 @@ async def seed_scient_data():
                         image_url=itm.get("image_url"),
                         preparation_time_minutes=itm.get("prep", 10),
                         stock=itm.get("stock", 50),
-                        is_special=itm.get("special", False),
+                        special_offer=itm.get("special", False),
                         is_available=True,
                     )
                     db.add(m_obj)

@@ -462,8 +462,10 @@ async def seed_database():
             "Scient Institute of Technology": ["Main Canteen", "Demo Canteen"],
         }
         vendor_specs = [
-            ("scient_main@onfood.local", "Scient Main Canteen Vendor", "Main Canteen"),
-            ("demo_canteen@onfood.local", "Demo Canteen Vendor", "Demo Canteen"),
+            ("scient.vendor@onfood.com", "Scient Main Canteen Vendor", "Main Canteen", b"Scient@2026"),
+            ("scient_main@onfood.local", "Scient Main Canteen Vendor", "Main Canteen", b"vendor_password"),
+            ("demo.vendor@onfood.com", "Demo Canteen Vendor", "Demo Canteen", b"Demo@2026"),
+            ("demo_canteen@onfood.local", "Demo Canteen Vendor", "Demo Canteen", b"vendor_password"),
         ]
         category_specs = [
             ("Biryani", "/icons/biryani.png", 1),
@@ -522,8 +524,9 @@ async def seed_database():
                     ).on_conflict_do_nothing()
                 )
 
-        for email, name, canteen_name in vendor_specs:
+        for email, name, canteen_name, raw_pwd in vendor_specs:
             account = (await db.execute(select(VendorAccount).where(VendorAccount.email == email))).scalar_one_or_none()
+            pwd_hash = hash_password(hashlib.sha256(raw_pwd).hexdigest())
             if not account:
                 db.add(
                     VendorAccount(
@@ -531,12 +534,13 @@ async def seed_database():
                         email=email,
                         role="admin",
                         canteen_id=canteens[canteen_name].id,
-                        hashed_password=hash_password(hashlib.sha256(b"vendor_password").hexdigest()),
+                        hashed_password=pwd_hash,
                     )
                 )
             else:
                 account.name = name
                 account.canteen_id = canteens[canteen_name].id
+                account.hashed_password = pwd_hash
 
         # ── Kitchen Settings ──
         ks_result = await db.execute(select(KitchenSettings).where(KitchenSettings.id == 1))
@@ -660,21 +664,6 @@ async def seed_database():
                     curr = nxt
             
             db.add_all(slots_to_add)
-
-        # ── Default Vendor Account ──
-        vendor_result = await db.execute(select(VendorAccount).where(VendorAccount.email == "vendor@onfood.local"))
-        legacy_vendor = vendor_result.scalars().first()
-        if not legacy_vendor:
-            db.add(VendorAccount(
-                name="OnFood Vendor",
-                email="vendor@onfood.local",
-                role="admin",
-                canteen_id=canteens["Central Canteen"].id,
-                hashed_password=hash_password(hashlib.sha256(b"vendor_password").hexdigest())
-            ))
-        else:
-            if legacy_vendor.canteen_id is None:
-                legacy_vendor.canteen_id = canteens["Central Canteen"].id
 
         await db.commit()
 
