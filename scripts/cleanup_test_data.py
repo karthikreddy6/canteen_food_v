@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.future import select
-from sqlalchemy import delete
+from sqlalchemy import delete, update
 from app.database import AsyncSessionLocal
 from app.models import (
     College, Canteen, college_canteens, VendorAccount, User,
@@ -56,6 +56,14 @@ async def cleanup_test_data():
     async with AsyncSessionLocal() as db:
         print("🧹 Cleaning up test accounts, colleges, canteens, and vendors...")
 
+        # 0. Check for production Scient Institute of Technology & Main Canteen
+        scient_col = (await db.execute(select(College).where(College.name == "Scient Institute of Technology"))).scalars().first()
+        main_can = (await db.execute(select(Canteen).where(Canteen.name == "Main Canteen"))).scalars().first()
+
+        target_college_id = scient_col.id if scient_col else None
+        target_college_name = scient_col.name if scient_col else None
+        target_canteen_id = main_can.id if main_can else None
+
         # 1. Clean up test users and ALL their related rows (orders, items, tickets, etc.)
         for email in TEST_USER_EMAILS:
             user_res = await db.execute(select(User).where(User.email == email))
@@ -103,6 +111,13 @@ async def cleanup_test_data():
             c_res = await db.execute(select(Canteen).where(Canteen.name == cname))
             c = c_res.scalars().first()
             if c:
+                # Re-link any users who selected this test canteen as their preferred canteen
+                await db.execute(
+                    update(User)
+                    .where(User.preferred_canteen_id == c.id)
+                    .values(preferred_canteen_id=target_canteen_id)
+                )
+
                 # Find all order IDs for this canteen
                 c_order_ids = (await db.execute(select(Order.id).where(Order.canteen_id == c.id))).scalars().all()
                 if c_order_ids:
@@ -119,6 +134,7 @@ async def cleanup_test_data():
                 await db.execute(delete(VendorAccount).where(VendorAccount.canteen_id == c.id))
                 await db.execute(delete(StaffMember).where(StaffMember.canteen_id == c.id))
                 await db.execute(delete(TimeSlot).where(TimeSlot.canteen_id == c.id))
+                await db.execute(delete(Banner).where(Banner.canteen_id == c.id))
                 await db.execute(delete(Canteen).where(Canteen.id == c.id))
                 print(f"  - Deleted test canteen: {cname}")
 
@@ -127,6 +143,16 @@ async def cleanup_test_data():
             col_res = await db.execute(select(College).where(College.name == col_name))
             col = col_res.scalars().first()
             if col:
+                # Re-link any users who selected this test college
+                await db.execute(
+                    update(User)
+                    .where(User.college_id == col.id)
+                    .values(
+                        college_id=target_college_id,
+                        college=target_college_name
+                    )
+                )
+
                 await db.execute(delete(college_canteens).where(college_canteens.c.college_id == col.id))
                 await db.execute(delete(Banner).where(Banner.college_id == col.id))
                 await db.execute(delete(College).where(College.id == col.id))
