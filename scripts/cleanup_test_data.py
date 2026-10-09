@@ -61,23 +61,21 @@ async def cleanup_test_data():
             user_res = await db.execute(select(User).where(User.email == email))
             user = user_res.scalars().first()
             if user:
-                # Find all orders for this user and remove them
-                orders_res = await db.execute(select(Order).where(Order.user_id == user.id))
-                user_orders = orders_res.scalars().all()
-                for o in user_orders:
-                    await db.execute(delete(OrderItem).where(OrderItem.order_id == o.id))
-                    # Nullify or delete tickets linked to order
-                    tickets_res = await db.execute(select(SupportTicket).where(SupportTicket.order_id == o.id))
-                    for t in tickets_res.scalars().all():
-                        await db.execute(delete(SupportMessage).where(SupportMessage.ticket_id == t.id))
-                        await db.execute(delete(SupportTicket).where(SupportTicket.id == t.id))
-                    await db.execute(delete(Order).where(Order.id == o.id))
+                # Find all order IDs for this user
+                order_ids = (await db.execute(select(Order.id).where(Order.user_id == user.id))).scalars().all()
+                if order_ids:
+                    await db.execute(delete(OrderItem).where(OrderItem.order_id.in_(order_ids)))
+                    ticket_ids = (await db.execute(select(SupportTicket.id).where(SupportTicket.order_id.in_(order_ids)))).scalars().all()
+                    if ticket_ids:
+                        await db.execute(delete(SupportMessage).where(SupportMessage.ticket_id.in_(ticket_ids)))
+                        await db.execute(delete(SupportTicket).where(SupportTicket.id.in_(ticket_ids)))
+                    await db.execute(delete(Order).where(Order.id.in_(order_ids)))
 
                 # Delete user support tickets & messages
-                tickets_res = await db.execute(select(SupportTicket).where(SupportTicket.user_id == user.id))
-                for t in tickets_res.scalars().all():
-                    await db.execute(delete(SupportMessage).where(SupportMessage.ticket_id == t.id))
-                    await db.execute(delete(SupportTicket).where(SupportTicket.id == t.id))
+                user_ticket_ids = (await db.execute(select(SupportTicket.id).where(SupportTicket.user_id == user.id))).scalars().all()
+                if user_ticket_ids:
+                    await db.execute(delete(SupportMessage).where(SupportMessage.ticket_id.in_(user_ticket_ids)))
+                    await db.execute(delete(SupportTicket).where(SupportTicket.id.in_(user_ticket_ids)))
 
                 # Delete OTPs, tokens, cart, points, coupon usages
                 await db.execute(delete(RegistrationOtp).where(RegistrationOtp.user_id == user.id))
@@ -105,15 +103,15 @@ async def cleanup_test_data():
             c_res = await db.execute(select(Canteen).where(Canteen.name == cname))
             c = c_res.scalars().first()
             if c:
-                # Find all orders for this canteen
-                c_orders = (await db.execute(select(Order).where(Order.canteen_id == c.id))).scalars().all()
-                for o in c_orders:
-                    await db.execute(delete(OrderItem).where(OrderItem.order_id == o.id))
-                    tickets_res = await db.execute(select(SupportTicket).where(SupportTicket.order_id == o.id))
-                    for t in tickets_res.scalars().all():
-                        await db.execute(delete(SupportMessage).where(SupportMessage.ticket_id == t.id))
-                        await db.execute(delete(SupportTicket).where(SupportTicket.id == t.id))
-                    await db.execute(delete(Order).where(Order.id == o.id))
+                # Find all order IDs for this canteen
+                c_order_ids = (await db.execute(select(Order.id).where(Order.canteen_id == c.id))).scalars().all()
+                if c_order_ids:
+                    await db.execute(delete(OrderItem).where(OrderItem.order_id.in_(c_order_ids)))
+                    ticket_ids = (await db.execute(select(SupportTicket.id).where(SupportTicket.order_id.in_(c_order_ids)))).scalars().all()
+                    if ticket_ids:
+                        await db.execute(delete(SupportMessage).where(SupportMessage.ticket_id.in_(ticket_ids)))
+                        await db.execute(delete(SupportTicket).where(SupportTicket.id.in_(ticket_ids)))
+                    await db.execute(delete(Order).where(Order.id.in_(c_order_ids)))
 
                 await db.execute(delete(CartItem).where(CartItem.canteen_id == c.id))
                 await db.execute(delete(MenuItem).where(MenuItem.canteen_id == c.id))
